@@ -1,6 +1,4 @@
 # django_cinema
-graduate work
-
 ## Cinema site.
 
 login, logout, registration.
