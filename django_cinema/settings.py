@@ -133,7 +133,9 @@ LOGIN_REDIRECT_URL = '/'
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
 ]
-STATIC_URL = '/static/'
+STATIC_URL = 'static/'
 STATIC_ROOT = ''
 MEDIA_URL = ''
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+DURATION_OF_BREAKS_AND_ADVERT = 20

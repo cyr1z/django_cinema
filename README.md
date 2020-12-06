@@ -2,11 +2,13 @@
 ## Cinema site.
 
 login, logout, registration.
+
 In all cases, a regular user, not an admin, should be automatically logged out 5 minutes after the last action of the person who got to the back!
+
 For all actions of any of the options, you need to implement all actions or models to implement the full CRUD through the REST API too!
 
 
-## Roles - user, admin
+### Roles - user, admin
 
 
 ### Actions:
