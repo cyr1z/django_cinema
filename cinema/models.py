@@ -66,9 +66,6 @@ class Movie(models.Model):
         return f"{self.title} / {self.duration_format}"
 
 
-
-
-
 class Session(models.Model):
     """
     Session
@@ -124,7 +121,6 @@ class Session(models.Model):
     def __str__(self):
         return f"{self.room.title} {self.time_start}-{self.time_finish} " \
                f"/${self.price}"
-
 
 
 class Ticket(models.Model):
