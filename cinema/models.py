@@ -116,6 +116,7 @@ class Session(models.Model):
                 raise ValidationError(f"start time isn't free")
             if i[0] <= self.time_finish <= i[1]:
                 raise ValidationError(f"finish time isn't free")
+
         super().save(*args, **kwargs)
 
     def __str__(self):
@@ -139,3 +140,9 @@ class Ticket(models.Model):
         null=True,
         related_name='user_tickets'
     )
+
+    def save(self, *args, **kwargs):
+        session = self.session
+        if session.session_tickets.count() >= session.room.seats_count:
+            raise ValidationError('no more seats for new tickets')
+        super().save(*args, **kwargs)
