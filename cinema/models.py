@@ -66,34 +66,22 @@ class Movie(models.Model):
         return f"{self.title} / {self.duration_format}"
 
 
-def validate_is_time_free(time):
-    sessions = Session.objects.filter(
-        time_start__year=time.year,
-        time_start__month=time.month,
-        time_start__day=time.day
-    )
-    session_times = [(s.time_start, s.time_finish) for s in sessions]
-    for i in session_times:
-        if i[0] <= time <= i[1]:
-            raise ValidationError(f"{time} - time isn't free")
+
 
 
 class Session(models.Model):
     """
     Session
     """
+
     movie = models.ForeignKey(
         Movie,
         on_delete=models.CASCADE,
         null=True,
         related_name='movie_sessions'
     )
-    time_start = models.DateTimeField(
-        validators=[validate_is_time_free]
-    )
-    time_finish = models.DateTimeField(
-        validators=[validate_is_time_free]
-    )
+    time_start = models.DateTimeField()
+    time_finish = models.DateTimeField()
     price = models.FloatField()
 
     room = models.ForeignKey(
@@ -118,6 +106,19 @@ class Session(models.Model):
             raise ValidationError(
                 f'session too short for {self.movie.title} movie. '
                 f'Should be more then {self.movie.duration_format}')
+
+        sessions = Session.objects.filter(
+            time_start__year=self.time_start.year,
+            time_start__month=self.time_start.month,
+            time_start__day=self.time_start.day,
+            room=self.room
+        )
+        session_times = [(s.time_start, s.time_finish) for s in sessions]
+        for i in session_times:
+            if i[0] <= self.time_start <= i[1]:
+                raise ValidationError(f"start time isn't free")
+            if i[0] <= self.time_finish <= i[1]:
+                raise ValidationError(f"finish time isn't free")
         super().save(*args, **kwargs)
 
     def __str__(self):
