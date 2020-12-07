@@ -89,21 +89,24 @@ class Session(models.Model):
     )
 
     def save(self, *args, **kwargs):
-
+        # finish date must be similar start date
         if self.time_start.year != self.time_finish.year or \
                 self.time_start.month != self.time_finish.month or \
                 self.time_start.day != self.time_finish.day:
             raise ValidationError('Wrong end date')
 
+        # finish time must be bigger than start time
         if self.time_start >= self.time_finish:
             raise ValidationError('Wrong end time')
 
+        # session duration must be longer or equal than movie duration
         session_duration = (self.time_finish - self.time_start).seconds // 60
         if self.movie.duration > session_duration:
             raise ValidationError(
                 f'session too short for {self.movie.title} movie. '
                 f'Should be more then {self.movie.duration_format}')
 
+        # sessions should not overlap
         sessions = Session.objects.filter(
             time_start__year=self.time_start.year,
             time_start__month=self.time_start.month,
