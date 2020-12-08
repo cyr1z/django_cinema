@@ -10,7 +10,6 @@ class CinemaUser(AbstractUser):
     Customised Django User Model
     Add phone
     """
-
     phone = models.CharField(
         max_length=20
     )
@@ -34,7 +33,6 @@ class Room(models.Model):
     """
     Cinema room
     """
-
     title = models.CharField(max_length=120)
     seats_count = models.PositiveIntegerField()
 
@@ -46,7 +44,6 @@ class Movie(models.Model):
     """
     Movie
     """
-
     title = models.CharField(max_length=120)
     description = models.TextField(blank=True)
     duration = models.IntegerField(help_text='Movie duration time (minutes)')
@@ -72,7 +69,6 @@ class Session(models.Model):
     """
     Session
     """
-
     movie = models.ForeignKey(
         Movie,
         on_delete=models.CASCADE,
@@ -159,6 +155,11 @@ class Ticket(models.Model):
                                                     session=self.session)
         if day_session_tickets.count() >= self.session.room.seats_count:
             raise ValidationError('no more seats for new tickets')
+        if self.date > self.session.date_finish or self.date < \
+                self.session.date_start:
+            raise ValidationError(f'ticket date must be in '
+                                  f'{self.session.date_start} - '
+                                  f'{self.session.date_finish}')
         super().save(*args, **kwargs)
 
     class Meta:
