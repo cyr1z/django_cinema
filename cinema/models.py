@@ -1,3 +1,5 @@
+from django.utils import timezone
+
 from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -77,8 +79,10 @@ class Session(models.Model):
         null=True,
         related_name='movie_sessions'
     )
-    time_start = models.DateTimeField()
-    time_finish = models.DateTimeField()
+    time_start = models.TimeField()
+    time_finish = models.TimeField()
+    date_start = models.DateField()
+    date_finish = models.DateField(null=True, blank=True,)
     price = models.FloatField()
 
     room = models.ForeignKey(
@@ -89,11 +93,6 @@ class Session(models.Model):
     )
 
     def save(self, *args, **kwargs):
-        # finish date must be similar start date
-        if self.time_start.year != self.time_finish.year or \
-                self.time_start.month != self.time_finish.month or \
-                self.time_start.day != self.time_finish.day:
-            raise ValidationError('Wrong end date')
 
         # finish time must be bigger than start time
         if self.time_start >= self.time_finish:
@@ -107,17 +106,25 @@ class Session(models.Model):
                 f'Should be more then {self.movie.duration_format}')
 
         # sessions should not overlap
-        sessions = Session.objects.filter(
-            time_start__year=self.time_start.year,
-            time_start__month=self.time_start.month,
-            time_start__day=self.time_start.day,
+        sessions_start = Session.objects.filter(
+            date_start__gte=self.date_start,
+            date_start__lte=self.date_finish,
             room=self.room
         )
-        session_times = [(s.time_start, s.time_finish) for s in sessions]
-        for i in session_times:
-            if i[0] <= self.time_start <= i[1]:
-                raise ValidationError(f"start time isn't free")
-            if i[0] <= self.time_finish <= i[1]:
+        sessions_finish = Session.objects.filter(
+            date_fininsh__gte=self.date_start,
+            date_finish__lte=self.date_finish,
+            room=self.room
+        )
+        sessions = sessions_start | sessions_finish
+
+        for session in sessions:
+            if session.time_start <= self.time_start <= session.time_finish:
+                raise ValidationError(
+                    f"start time isn't free [ {session.date_start} - "
+                    f"{session.date_finish if session.date_finish else ''} ]"
+                    f"/ {session.title}")
+            if session.time_start <= self.time_finish <= session.time_finish:
                 raise ValidationError(f"finish time isn't free")
 
         super().save(*args, **kwargs)
@@ -143,9 +150,11 @@ class Ticket(models.Model):
         null=True,
         related_name='user_tickets'
     )
+    date = models.DateField()
 
     def save(self, *args, **kwargs):
-        session = self.session
-        if session.session_tickets.count() >= session.room.seats_count:
+        day_session_tickets = Ticket.objects.filter(date=self.date,
+                                                    session=self.session)
+        if day_session_tickets.count() >= self.session.room.seats_count:
             raise ValidationError('no more seats for new tickets')
         super().save(*args, **kwargs)
