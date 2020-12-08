@@ -25,4 +25,3 @@ class UserLogout(LoginRequiredMixin, LogoutView):
     """ Logout """
     next_page = '/'
     redirect_field_name = 'next'
-

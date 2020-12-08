@@ -1,4 +1,4 @@
-from django.utils import timezone
+from datetime import datetime as dt, date
 
 from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ValidationError
@@ -79,18 +79,17 @@ class Session(models.Model):
         null=True,
         related_name='movie_sessions'
     )
-    time_start = models.TimeField()
-    time_finish = models.TimeField()
-    date_start = models.DateField()
-    date_finish = models.DateField(null=True, blank=True,)
-    price = models.FloatField()
-
     room = models.ForeignKey(
         Room,
         on_delete=models.CASCADE,
         null=False,
         related_name='room_sessions',
     )
+    time_start = models.TimeField()
+    time_finish = models.TimeField()
+    date_start = models.DateField()
+    date_finish = models.DateField(null=True, blank=True, )
+    price = models.FloatField()
 
     def save(self, *args, **kwargs):
 
@@ -99,7 +98,9 @@ class Session(models.Model):
             raise ValidationError('Wrong end time')
 
         # session duration must be longer or equal than movie duration
-        session_duration = (self.time_finish - self.time_start).seconds // 60
+        finish = dt.combine(date.min, self.time_finish)
+        start = dt.combine(date.min, self.time_start)
+        session_duration = (finish - start).seconds // 60
         if self.movie.duration > session_duration:
             raise ValidationError(
                 f'session too short for {self.movie.title} movie. '
@@ -121,8 +122,8 @@ class Session(models.Model):
         for session in sessions:
             if session.time_start <= self.time_start <= session.time_finish:
                 raise ValidationError(
-                    f"start time isn't free [ {session.date_start} - "
-                    f"{session.date_finish if session.date_finish else ''} ]"
+                    f"start time isn't free [ {session.date_start}"
+                    f" {session.date_finish if session.date_finish else ''} ]"
                     f"/ {session.title}")
             if session.time_start <= self.time_finish <= session.time_finish:
                 raise ValidationError(f"finish time isn't free")
