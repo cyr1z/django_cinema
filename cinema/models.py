@@ -113,7 +113,7 @@ class Session(models.Model):
             room=self.room
         )
         sessions_finish = Session.objects.filter(
-            date_fininsh__gte=self.date_start,
+            date_finish__gte=self.date_start,
             date_finish__lte=self.date_finish,
             room=self.room
         )
