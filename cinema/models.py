@@ -151,6 +151,7 @@ class Ticket(models.Model):
         related_name='user_tickets'
     )
     date = models.DateField()
+    seat_number = models.PositiveIntegerField()
 
     def save(self, *args, **kwargs):
         day_session_tickets = Ticket.objects.filter(date=self.date,
@@ -158,3 +159,6 @@ class Ticket(models.Model):
         if day_session_tickets.count() >= self.session.room.seats_count:
             raise ValidationError('no more seats for new tickets')
         super().save(*args, **kwargs)
+
+    class Meta:
+        unique_together = (("date", "session", "seat_number"),)
