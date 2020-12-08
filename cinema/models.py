@@ -26,7 +26,7 @@ class CinemaUser(AbstractUser):
         verbose_name_plural = 'Users'
 
     def __str__(self):
-        return self.get_full_name()
+        return f'{self.full_name} {self.phone}'
 
 
 class Room(models.Model):
@@ -128,7 +128,8 @@ class Session(models.Model):
 
     def __str__(self):
         return f"{self.room.title} {self.time_start}-{self.time_finish} " \
-               f"/${self.price}"
+               f"/${self.price} / {self.movie.title} / {self.date_start} - " \
+               f"{self.date_finish}"
 
 
 class Ticket(models.Model):
@@ -164,3 +165,8 @@ class Ticket(models.Model):
 
     class Meta:
         unique_together = (("date", "session", "seat_number"),)
+
+    def __str__(self):
+        return f"{self.session.movie.title}  [{self.date} " \
+               f"{self.session.time_start}] ( #{self.seat_number} )" \
+               f" user: {self.user.get_full_name()}"
