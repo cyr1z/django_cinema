@@ -1,8 +1,10 @@
-from datetime import datetime as dt, date
+from datetime import datetime as dt, date, timedelta
 
 from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ValidationError
 from django.db import models
+
+from django_cinema.settings import DURATION_OF_BREAKS
 
 
 class CinemaUser(AbstractUser):
@@ -37,7 +39,7 @@ class Room(models.Model):
     seats_count = models.PositiveIntegerField()
 
     def __str__(self):
-        return f'{self.title} room / {self.seats_count} seats'
+        return f'{self.title}  / {self.seats_count} seats'
 
 
 class Movie(models.Model):
@@ -47,6 +49,8 @@ class Movie(models.Model):
     title = models.CharField(max_length=120)
     description = models.TextField(blank=True)
     duration = models.IntegerField(help_text='Movie duration time (minutes)')
+    director = models.CharField(max_length=120, blank=True, null=True)
+    year = models.IntegerField(blank=True, null=True)
     poster = models.ImageField(
         verbose_name='Poster',
         upload_to='static/posters',
@@ -82,13 +86,17 @@ class Session(models.Model):
         related_name='room_sessions',
     )
     time_start = models.TimeField()
-    time_finish = models.TimeField()
+    time_finish = models.TimeField(null=True, blank=True, )
     date_start = models.DateField()
     date_finish = models.DateField(null=True, blank=True, )
     price = models.FloatField()
 
     def save(self, *args, **kwargs):
-
+        # autofill the finish time field
+        if not self.time_finish:
+            td = timedelta(minutes=self.movie.duration + DURATION_OF_BREAKS)
+            time = dt.combine(date.min, self.time_start)
+            self.time_finish = (time + td).time()
         # finish time must be bigger than start time
         if self.time_start >= self.time_finish:
             raise ValidationError('Wrong end time')
@@ -100,7 +108,8 @@ class Session(models.Model):
         if self.movie.duration > session_duration:
             raise ValidationError(
                 f'session too short for {self.movie.title} movie. '
-                f'Should be more then {self.movie.duration_format}')
+                f'Should be more then {self.movie.duration_format}'
+            )
 
         # sessions should not overlap
         sessions_start = Session.objects.filter(
@@ -152,15 +161,18 @@ class Ticket(models.Model):
     seat_number = models.PositiveIntegerField()
 
     def save(self, *args, **kwargs):
-        day_session_tickets = Ticket.objects.filter(date=self.date,
-                                                    session=self.session)
+        day_session_tickets = Ticket.objects.filter(
+            date=self.date,
+            session=self.session
+        )
         if day_session_tickets.count() >= self.session.room.seats_count:
             raise ValidationError('no more seats for new tickets')
-        if self.date > self.session.date_finish or self.date < \
-                self.session.date_start:
-            raise ValidationError(f'ticket date must be in '
-                                  f'{self.session.date_start} - '
-                                  f'{self.session.date_finish}')
+        if self.date > self.session.date_finish \
+                or self.date < self.session.date_start:
+            raise ValidationError(
+                f'ticket date must be in {self.session.date_start} - '
+                f'{self.session.date_finish}'
+            )
         super().save(*args, **kwargs)
 
     class Meta:
