@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% block content %}
+
+        <!-- Main content -->
+                <form id="login-form" class="login" method='POST' novalidate=''>
+                    <p class="login__title">sign in <br><span class="login-edition">welcome to A.Movie</span></p>
+                     {% csrf_token %}
+{#                    <div class="social social--colored">#}
+{#                            <a href='#' class="social__variant fa fa-facebook"></a>#}
+{#                            <a href='#' class="social__variant fa fa-twitter"></a>#}
+{#                            <a href='#' class="social__variant fa fa-tumblr"></a>#}
+{#                    </div>#}
+{##}
+{#                    <p class="login__tracker">or</p>#}
+                    
+                    <div class="field-wrap">
+                    {{ form|crispy  }}
+{#|crispy #}
+{#                    <input type='checkbox' id='#informed' class='login__check styled'>#}
+                    <label for='#informed' class='login__check-info'></label>
+                     </div>
+                    
+                    <div class="login__control">
+                        <button type='submit' class="btn btn-md btn--warning btn--wider">sign in</button>
+                        <a href="{% url 'register' %}" class="login__tracker form__tracker">Sign Up</a>
+                    </div>
+                </form>
+        
+        <div class="clearfix"></div>
+
+{% endblock %}

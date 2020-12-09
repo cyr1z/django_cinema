@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% block content %}
+
+    <!-- Main content -->
+    <form id="login-form" class="login" method='POST' novalidate=''>
+        <p class="login__title">sign up <br><span class="login-edition">welcome to A.Movie</span>
+        </p>
+        {% csrf_token %}
+
+        <div class="field-wrap">
+            {{ form|crispy }}
+            <div class="login__control">
+                <button type='submit' class="btn btn-md btn--warning btn--wider">Sign Up</button>
+            </div>
+    </form>
+
+    <div class="clearfix"></div>
+
+{% endblock %}
