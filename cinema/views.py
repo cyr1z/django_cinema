@@ -4,6 +4,7 @@ from django.shortcuts import render
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView, LogoutView
 from django.core.paginator import Paginator
+from django.utils.datastructures import MultiValueDictKeyError
 from django.views.generic import CreateView, ListView, TemplateView, DetailView
 
 from cinema.forms import SignUpForm
@@ -83,9 +84,15 @@ class SessionDetailView(LoginRequiredMixin, DetailView):
     # Add date today and tomorrow to context
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(object_list=object_list, **kwargs)
+        date = datetime.now().date()
+        try:
+            if str(self.request.GET['date']):
+                q_date = str(self.request.GET['date'])
+                date_t = datetime(*[int(item) for item in q_date.split('-')])
+                date = date_t.date()
+        except MultiValueDictKeyError:
+            pass
 
-        query_date = str(self.request.GET['date'])
-        date = datetime(*[int(item) for item in query_date.split('-')]).date()
         context.update({'date': date})
         return context
 

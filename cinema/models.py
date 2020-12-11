@@ -93,6 +93,7 @@ class Session(models.Model):
 
     @property
     def free_seats(self):
+        """  free seats in session """
         return self.room.seats_count - self.session_tickets.count()
 
     def save(self, *args, **kwargs):
