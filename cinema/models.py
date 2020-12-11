@@ -91,7 +91,14 @@ class Session(models.Model):
     date_finish = models.DateField(null=True, blank=True, )
     price = models.FloatField()
 
+    @property
+    def free_seats(self):
+        return self.room.seats_count - self.session_tickets.count()
+
     def save(self, *args, **kwargs):
+        # the session does not change after buying tickets
+        if self.session_tickets.count():
+            raise ValidationError('The session has a ticket')
         # autofill the finish time field
         if not self.time_finish:
             td = timedelta(minutes=self.movie.duration + DURATION_OF_BREAKS)

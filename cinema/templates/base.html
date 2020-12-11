@@ -47,7 +47,7 @@
     <header class="header-wrapper">
         <div class="container">
             <!-- Logo link-->
-            <a href='index.html' class="logo">
+            <a href='/' class="logo">
                 <img alt='logo' src="/static/images/logo.png">
             </a>
 
@@ -257,13 +257,35 @@
                     </li>
                 </ul>
             </nav>
+            {% if request.user.is_authenticated %}
+            <!-- Additional header buttons / Auth and direct link to booking-->
+                <div class="control-panel">
 
+                    <div class="auth auth--home">
+                      <div class="auth__show">
+                      </div>
+                      <div class="btn btn--sign btn--singin">
+                          {{ request.user.full_name }}
+                      </div>
+{#                        <ul class="auth__function">#}
+{#                            <li><a href="#" class="auth__function-item">Watchlist</a></li>#}
+{#                            <li><a href="#" class="auth__function-item">Booked tickets</a></li>#}
+{#                            <li><a href="#" class="auth__function-item">Discussion</a></li>#}
+{#                            <li><a href="#" class="auth__function-item">Settings</a></li>#}
+{#                        </ul>#}
+
+                    </div>
+                    <a href="{% url 'logout' %}" class="btn btn-md btn--ready"><i class="fa fa-sign-out"></i> Logout</a>
+                </div>
+            {% else %}
             <!-- Additional header buttons / Auth and direct link to booking-->
             <div class="control-panel">
-                <a href="#" class="btn btn--sign">Sign in</a>
+
+                <a href="/login" class="btn btn--sign">Sign in</a>
 {#                <a href="#" class="btn btn-md btn--warning btn--book">Book a#}
 {#                    ticket</a>#}
             </div>
+            {% endif %}
 
         </div>
     </header>
@@ -372,7 +394,7 @@
 {#    <script src="/static/js/form.js"></script>#}
 
     <!-- Custom -->
-{#    <script src="/static/js/custom.js"></script>#}
+    <script src="/static/js/custom.js"></script>
 </div>
 
 </body>

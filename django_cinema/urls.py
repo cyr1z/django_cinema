@@ -16,9 +16,13 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
-from cinema.views import Register, UserLogout, UserLogin
+from cinema.views import Register, UserLogout, UserLogin, SessionsView, \
+    TomorrowSessionsView, SessionDetailView
 
 urlpatterns = [
+    path('', SessionsView.as_view(), name="sessions"),
+    path('tomorrow/', TomorrowSessionsView.as_view(), name="tomorrow"),
+    path('session/<int:pk>/', SessionDetailView.as_view(), name='session'),
     path('login/', UserLogin.as_view(), name="login"),
     path('logout/', UserLogout.as_view(), name="logout"),
     path('register/', Register.as_view(), name="register"),
