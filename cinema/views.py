@@ -1,3 +1,4 @@
+import re
 from datetime import datetime, timedelta
 
 from django.shortcuts import render
@@ -40,7 +41,7 @@ class SessionsView(ListView):
     queryset = Session.objects.filter(
         date_finish__gte=datetime.now().date(),
         date_start__lte=datetime.now().date(),
-        )
+    )
 
     # Add date today and tomorrow to context
     def get_context_data(self, *, object_list=None, **kwargs):
@@ -62,7 +63,7 @@ class TomorrowSessionsView(ListView):
     queryset = Session.objects.filter(
         date_finish__gte=(datetime.now() + timedelta(days=1)).date(),
         date_start__lte=(datetime.now() + timedelta(days=1)).date(),
-        )
+    )
 
     # Add date today and tomorrow to context
     def get_context_data(self, *, object_list=None, **kwargs):
@@ -81,19 +82,21 @@ class SessionDetailView(LoginRequiredMixin, DetailView):
     model = Session
     template_name = 'movie-page-full.html'
 
+    def get_date(self):
+        """ Get date from request for select today/tomorrow """
+        regexp_date = "^\d{4}\-(0[1-9]|1[012])\-(0[1-9]|[12][0-9]|3[01])$"
+        q_date = str(self.request.GET.get('date', ''))
+        today = datetime.now().date()
+        tomorrow = today + timedelta(days=1)
+        if q_date and re.match(regexp_date, q_date):
+            date = datetime(*[int(item) for item in q_date.split('-')]).date()
+            if today <= date <= tomorrow and date <= self.object.date_finish:
+                return date
+        return today
+
     # Add date today and tomorrow to context
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(object_list=object_list, **kwargs)
-        date = datetime.now().date()
-        try:
-            if str(self.request.GET['date']):
-                q_date = str(self.request.GET['date'])
-                date_t = datetime(*[int(item) for item in q_date.split('-')])
-                date = date_t.date()
-        except MultiValueDictKeyError:
-            pass
-
+        date = self.get_date()
         context.update({'date': date})
         return context
-
-
