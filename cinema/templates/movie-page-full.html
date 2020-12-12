@@ -26,12 +26,20 @@
                             <p class="movie__option"><strong>Time start: </strong>{{ session.time_start }}</p>
                             <p class="movie__option"><strong>Price: </strong>$ {{ session.price }}</p>
                             <p class="movie__option"><strong>Date: </strong>{{ date }} </p>
-                            <p class="movie__option"><strong>Tickets purchased: </strong>{{ session.session_tickets.count }}</p>
-                            <p class="movie__option"><strong>Free seats: </strong>{{ session.free_seats }}</p>
+                            <p class="movie__option"><strong>Tickets purchased: </strong>{{ session_tickets_count }}</p>
+                            <p class="movie__option"><strong>Free seats: </strong>{{ free_seats_count }}</p>
 
 {#                            <a href="#" class="comment-link">Comments:  15</a>#}
 {##}
                             <div class="movie__btns movie__btns--full">
+                                <label for="exampleFormControlSelect2"><h3 style="margin-top: 0;">Select seats numbers</h3></label>
+<select multiple class="custom-select" size="10" style="width: 100%; margin-bottom: 15px; display: flex; text-align: center; text-align-last: center; font: 20px 'aleobold', sans-serif;">
+{#  <option selected>Open this select menu</option>#}
+    {% for num in free_seats %}
+  <option value="{{ num }}" >{{ num }}</option>
+    {% endfor %}
+
+</select>
                                 <a href="#" class="btn btn-md btn--warning">book a ticket for this movie</a>
 {#                                <a href="#" class="watchlist">Add to watchlist</a>#}
                             </div>

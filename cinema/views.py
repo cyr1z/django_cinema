@@ -1,11 +1,11 @@
 import re
 from datetime import datetime, timedelta
 
+from django.db.models import Count, Q
 from django.shortcuts import render
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView, LogoutView
 from django.core.paginator import Paginator
-from django.utils.datastructures import MultiValueDictKeyError
 from django.views.generic import CreateView, ListView, TemplateView, DetailView
 
 from cinema.forms import SignUpForm
@@ -38,18 +38,24 @@ class SessionsView(ListView):
     model = Session
     paginate_by = 10
     template_name = 'movie-list-full.html'
+    today = datetime.now().date()
+    tomorrow = today + timedelta(days=1)
     queryset = Session.objects.filter(
         date_finish__gte=datetime.now().date(),
         date_start__lte=datetime.now().date(),
-    )
+    ).annotate(
+        tickets=Count('session_tickets',
+                      filter=Q(session_tickets__date=today)))
 
     # Add date today and tomorrow to context
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(object_list=object_list, **kwargs)
-        today = datetime.now().date()
-        tomorrow = (datetime.now() + timedelta(days=1)).date()
-        date = today.strftime('%Y-%m-%d')
-        context.update({'today': today, 'tomorrow': tomorrow, 'date': date})
+
+        date = self.today.strftime('%Y-%m-%d')
+        context.update({
+            'today': self.today,
+            'tomorrow': self.tomorrow,
+            'date': date})
         return context
 
 
@@ -60,22 +66,28 @@ class TomorrowSessionsView(ListView):
     model = Session
     paginate_by = 6
     template_name = 'tomorrow-list-full.html'
+    today = datetime.now().date()
+    tomorrow = today + timedelta(days=1)
     queryset = Session.objects.filter(
         date_finish__gte=(datetime.now() + timedelta(days=1)).date(),
         date_start__lte=(datetime.now() + timedelta(days=1)).date(),
-    )
+    ).annotate(
+        tickets=Count('session_tickets',
+                      filter=Q(session_tickets__date=tomorrow)))
 
     # Add date today and tomorrow to context
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(object_list=object_list, **kwargs)
-        today = datetime.now().date()
-        tomorrow = (datetime.now() + timedelta(days=1)).date()
-        date = tomorrow.strftime('%Y-%m-%d')
-        context.update({'today': today, 'tomorrow': tomorrow, 'date': date})
+        date = self.tomorrow.strftime('%Y-%m-%d')
+        context.update({
+            'today': self.today,
+            'tomorrow': self.tomorrow,
+            'date': date,
+        })
         return context
 
 
-class SessionDetailView(LoginRequiredMixin, DetailView):
+class SessionDetailView(DetailView):
     """
     Session with ticket buying
     """
@@ -94,9 +106,21 @@ class SessionDetailView(LoginRequiredMixin, DetailView):
                 return date
         return today
 
-    # Add date today and tomorrow to context
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(object_list=object_list, **kwargs)
+        # Add date today or tomorrow to context
         date = self.get_date()
-        context.update({'date': date})
+
+        bought_seats = self.object.session_tickets.filter(date=date)
+        bought_seats_numbers = set(i.seat_number for i in bought_seats)
+        all_seats = set(range(1, self.object.room.seats_count+1))
+        free_seats = list(all_seats - bought_seats_numbers)
+        free_seats_count = len(free_seats)
+        session_tickets_count = len(bought_seats_numbers)
+        context.update({
+            'date': date,
+            'free_seats': free_seats,
+            'free_seats_count': free_seats_count,
+            'session_tickets_count': session_tickets_count,
+        })
         return context

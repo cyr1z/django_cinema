@@ -91,11 +91,6 @@ class Session(models.Model):
     date_finish = models.DateField(null=True, blank=True, )
     price = models.FloatField()
 
-    @property
-    def free_seats(self):
-        """  free seats in session """
-        return self.room.seats_count - self.session_tickets.count()
-
     def save(self, *args, **kwargs):
         # the session does not change after buying tickets
         if self.session_tickets.count():
@@ -135,9 +130,9 @@ class Session(models.Model):
         for session in sessions:
             if session.time_start <= self.time_start <= session.time_finish:
                 raise ValidationError(
-                    f"start time isn't free [ {session.date_start}"
-                    f" {session.date_finish if session.date_finish else ''} ]"
-                    f"/ {session.title}")
+                    f"start time isn't free at {session.date_start} - "
+                    f"{session.date_finish} / {session.movie.title}"
+                )
             if session.time_start <= self.time_finish <= session.time_finish:
                 raise ValidationError(f"finish time isn't free")
 

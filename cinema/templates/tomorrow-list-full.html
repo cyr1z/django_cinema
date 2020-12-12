@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
+    {% load mathfilters %}
         <!-- Main content -->
         <section class="container">
             <div class="col-sm-12">
@@ -89,8 +90,8 @@
                             <p class="movie__option"><strong>Time start: </strong>{{ session.time_start }}</p>
                             <p class="movie__option"><strong>Price: </strong>$ {{ session.price }}</p>
                             <p class="movie__option"><strong>Dates: </strong>{{ session.date_start }} - {{ session.date_finish }}</p>
-                            <p class="movie__option"><strong>Bought tickets: </strong>{{ session.session_tickets.count }}</p>
-                            <p class="movie__option"><strong>Free seats: </strong>{{ session.free_seats }}</p>
+                            <p class="movie__option"><strong>Bought tickets: </strong>{{ session.tickets }}</p>
+                            <p class="movie__option"><strong>Free seats: </strong>{{ session.room.seats_count|sub:session.tickets }}</p>
 
                             <div class="movie__btns">
                                 <a href="{% url 'session' session.id %}?date={{ date }}" class="btn btn-md btn--warning">book a ticket <span class="hidden-sm">for this movie</span></a>
