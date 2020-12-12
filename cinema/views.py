@@ -113,7 +113,7 @@ class SessionDetailView(DetailView):
 
         bought_seats = self.object.session_tickets.filter(date=date)
         bought_seats_numbers = set(i.seat_number for i in bought_seats)
-        all_seats = set(range(1, self.object.room.seats_count+1))
+        all_seats = set(range(1, self.object.room.seats_count + 1))
         free_seats = list(all_seats - bought_seats_numbers)
         free_seats_count = len(free_seats)
         session_tickets_count = len(bought_seats_numbers)
