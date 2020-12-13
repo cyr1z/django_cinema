@@ -7,23 +7,7 @@
             <h2 class="page-heading">Sessions</h2>
 
             <div style="vertical-align: auto">
-                {#                    <form class="select" method='get'>#}
-                {#                          <select name="select_item" class="select__sort" tabindex="0">#}
-                {#                            <option value="1" selected='selected'>London</option>#}
-                {#                            <option value="2">New York</option>#}
-                {#                            <option value="3">Paris</option>#}
-                {#                            <option value="4">Berlin</option>#}
-                {#                            <option value="5">Moscow</option>#}
-                {#                            <option value="3">Minsk</option>#}
-                {#                            <option value="4">Warsawa</option>#}
-                {#                            <option value="5">Kiev</option>#}
-                {#                        </select>#}
-                {#                    </form>#}
-                {##}
-                {#                    <div class=""">#}
-                {#                     <i class="fa fa-calendar  "></i> Today 03/10/2014#}
-                {#                    </div>#}
-                {#                <ul class="nav nav-tabs">#}
+
 
                 <div>
                     <a type="button" href="/" class="btn btn-default"><i
@@ -34,26 +18,6 @@
 
                 </div>
 
-                {#                    <form class="select select--cinema" method='get'>#}
-                {#                          <select name="select_item" class="select__sort" tabindex="0">#}
-                {#                            <option value="1" selected='selected'>Cineworld</option>#}
-                {#                            <option value="2">Empire</option>#}
-                {#                            <option value="3">Everyman</option>#}
-                {#                            <option value="4">Odeon</option>#}
-                {#                            <option value="5">Picturehouse</option>#}
-                {#                        </select>#}
-                {#                    </form>#}
-                {##}
-                {#                    <form class="select select--film-category" method='get'>#}
-                {#                          <select name="select_item" class="select__sort" tabindex="0">#}
-                {#                            <option value="2" selected='selected'>Children's</option>#}
-                {#                            <option value="3">Comedy</option>#}
-                {#                            <option value="4">Drama</option>#}
-                {#                            <option value="5">Fantasy</option>#}
-                {#                            <option value="6">Horror</option>#}
-                {#                            <option value="7">Thriller</option>#}
-                {#                        </select>#}
-                {#                    </form>#}
 
             </div>
 
@@ -87,11 +51,7 @@
                             <img alt='{{ session.movie.title }}'
                                  src="/{{ session.movie.poster }}">
                         </div>
-                        {#                            <div class="movie__feature">#}
-                        {#                                <a href="#" class="movie__feature-item movie__feature--comment">123</a>#}
-                        {#                                <a href="#" class="movie__feature-item movie__feature--video">7</a>#}
-                        {#                                <a href="#" class="movie__feature-item movie__feature--photo">352</a>#}
-                        {#                            </div>#}
+
                     </div>
 
                     <div class="col-sm-9 col-md-10 col-lg-10 movie__about">
@@ -119,14 +79,10 @@
                             <a href="{% url 'session' session.id %}?date={{ date }}"
                                class="btn btn-md btn--warning">book a ticket
                                 <span class="hidden-sm">for this movie</span></a>
-                            {#                                <a href="#" class="watchlist">Add to watchlist</a>#}
                         </div>
 
                         <div class="preview-footer">
-                            {#                                <div class="movie__rate"><div class="score"></div><span class="movie__rate-number">170 votes</span> <span class="movie__rating">5.0</span></div>#}
-                            {#                                #}
-                            {##}
-                            {#                                <a href="#" class="movie__show-btn">Showtime</a>#}
+
                         </div>
                     </div>
 
