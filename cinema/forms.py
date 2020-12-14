@@ -24,11 +24,3 @@ class SignUpForm(UserCreationForm):
         model = CinemaUser
         fields = ('username', 'first_name', 'last_name',
                   'email', 'phone', 'password1', 'password2',)
-
-
-class BuyTicket(ModelForm):
-    count = forms.IntegerField(label='Count', initial='1')
-
-    class Meta:
-        model = Ticket
-        fields = ['count', 'session', ]

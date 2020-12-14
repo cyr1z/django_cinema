@@ -1,15 +1,17 @@
 import re
 from datetime import datetime, timedelta
 
-from django.db.models import Count, Q
+from django.contrib.auth.decorators import login_required
+from django.db.models import Count, Q, Sum
 from django.shortcuts import render
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView, LogoutView
 from django.core.paginator import Paginator
+from django.utils.decorators import method_decorator
 from django.views.generic import CreateView, ListView, TemplateView, DetailView
 
 from cinema.forms import SignUpForm
-from cinema.models import Movie, Room, Session
+from cinema.models import Movie, Room, Session, Ticket
 
 
 # Create your views here.
@@ -122,5 +124,42 @@ class SessionDetailView(DetailView):
             'free_seats': free_seats,
             'free_seats_count': free_seats_count,
             'session_tickets_count': session_tickets_count,
+        })
+        return context
+
+
+# class TicketsBuyView(TemplateView):
+#     """
+#         Create a purchase
+#     """
+#     def post(self, *args, **kwargs):
+#         print(self.request.POST)
+@method_decorator(login_required, name='dispatch')
+class TicketsListView(ListView):
+    """
+        List of sessions
+        """
+    model = Ticket
+    paginate_by = 15
+    template_name = 'tickets-list.html'
+    today = datetime.now().date()
+
+    # add user filter to queryset
+    def get_queryset(self):
+        return Ticket.objects.filter(user=self.request.user)
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(object_list=object_list, **kwargs)
+        old_tickets = self.object_list.filter(date__lt=self.today)
+        new_tickets = self.object_list.filter(date__gte=self.today)
+        tickets_count = self.object_list.aggregate(Count('id'))['id__count']
+        money_sum = self.object_list.aggregate(
+            Sum('session__price'))['session__price__sum']
+
+        context.update({
+            'old_tickets': old_tickets,
+            'new_tickets': new_tickets,
+            'tickets_count': tickets_count,
+            'money_sum': money_sum,
         })
         return context

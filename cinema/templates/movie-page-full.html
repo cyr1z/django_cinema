@@ -44,13 +44,14 @@
                         {##}
                         <div class="movie__btns movie__btns--full  color--grey-lighter"
                              style="padding: 20px; border: 3px solid #ffd564;">
-                            <form action="">
+                            <form action="/buyticket/">
                                 <label for="exampleFormControlSelect2"><h3
                                         style="margin-top: 0;">Select seats
                                     numbers</h3></label>
                                 <select multiple class="custom-select"
                                         size="10"
-                                        style="width: 100%; margin-bottom: 15px; display: flex; text-align: center; text-align-last: center; font: 15px 'aleobold', sans-serif; ">
+                                        style="width: 100%; margin-bottom: 15px; display: flex; text-align: center; text-align-last: center; font: 15px 'aleobold', sans-serif; "
+                                    name="seats_numbers">
                                     {#  <option selected>Open this select menu</option>#}
                                     {% for num in free_seats %}
                                         <option value="{{ num }}">{{ num }}</option>
