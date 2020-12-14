@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block content %}
+        <!-- Main content -->
+        <section class="container">
+            <div class="col-sm-12">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <h2 class="page-heading">My tickets</h2>
+
+                        <div class="rates-wrapper rates--full">
+                            
+                            <table>
+                                <colgroup class="col-width-lg">
+                                <colgroup class="col-width">
+                                <colgroup class="col-width-sm">
+                                <colgroup class="col-width">
+                                <tr style="height: 30px;">
+                                    <td ></td>
+                                    <td > </td>
+                                    <td ></td>
+                                    <td ><span style="padding: 10px; font-size: large;">{{ tickets_count }} tickets worth ${{ money_sum }}</span></td>
+                                </tr>
+                                {% for ticket in new_tickets %}
+                                <tr class="rates rates--top">
+                                    <td class="rates__obj"><h1>{{ ticket.session.movie.title }}</h1></td>
+                                    <td class="rates__vote">{{ ticket.session.time_start }} / {{ ticket.date }} /
+                                    {{ ticket.session.room.title }}</td>
+                                    <td class="rates__result">{{ ticket.seat_number }}</td>
+                                    <td class="rates__stars"><div class="score">$ {{ ticket.session.price }}</div></td>
+                                </tr>
+                                {% endfor %}
+                                {% for ticket in old_tickets %}
+                                <tr class="rates">
+                                            <td class="rates__obj"><h1>{{ ticket.session.movie.title }}</h1></td>
+                                    <td class="rates__vote">{{ ticket.session.time_start }} / {{ ticket.date }} /
+                                    {{ ticket.session.room.title }}</td>
+                                    <td class="rates__result">{{ ticket.seat_number }}</td>
+                                    <td class="rates__stars"><div class="score">$ {{ ticket.session.price }}</div></td>
+                                </tr>
+                                {% endfor %}
+
+                            </table>
+                        </div>
+
+                        <div class="pagination paginatioon--full coloum-wrapper">
+                            <a href='#' class="pagination__prev">prev</a>
+                            <a href='#' class="pagination__next">next</a>
+                        </div>    
+                    </div>
+
+                </div>
+            </div>
+        </section>
+        
+        <div class="clearfix"></div>
+{% endblock %}
