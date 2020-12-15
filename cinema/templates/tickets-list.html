@@ -18,7 +18,10 @@
                                     <td ></td>
                                     <td > </td>
                                     <td ></td>
-                                    <td ><span style="padding: 10px; font-size: large;">{{ tickets_count }} tickets worth ${{ money_sum }}</span></td>
+                                    <td ><span style="padding: 10px; font-size: large;">
+                                        {% if  tickets_count %}
+                                        {{ tickets_count }} tickets worth ${{ money_sum }}
+                                    {% endif %}</span></td>
                                 </tr>
                                 {% for ticket in new_tickets %}
                                 <tr class="rates rates--top">
