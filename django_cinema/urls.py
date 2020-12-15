@@ -17,7 +17,8 @@ from django.contrib import admin
 from django.urls import path, include
 
 from cinema.views import Register, UserLogout, UserLogin, SessionsView, \
-    TomorrowSessionsView, SessionDetailView,  TicketsListView
+    TomorrowSessionsView, SessionDetailView, TicketsListView, RoomCreateView, \
+    MovieCreateView, SessionCreateView
 
 urlpatterns = [
     path('', SessionsView.as_view(), name="sessions"),
@@ -27,6 +28,9 @@ urlpatterns = [
     path('accounts/logout/', UserLogout.as_view(), name="logout"),
     path('accounts/register/', Register.as_view(), name="register"),
     path('tickets/', TicketsListView.as_view(), name="tickets"),
+    path('createroom/', RoomCreateView.as_view(), name="createroom"),
+    path('createmovie/', MovieCreateView.as_view(), name="createmovie"),
+    path('createsession/', SessionCreateView.as_view(), name="createsession"),
     path('admin/', admin.site.urls),
     path('accounts/', include('django.contrib.auth.urls')),
 ]

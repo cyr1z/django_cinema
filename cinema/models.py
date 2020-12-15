@@ -168,6 +168,8 @@ class Ticket(models.Model):
             date=self.date,
             session=self.session
         )
+        # the count of tickets should not exceed
+        # the count of seats in the room
         if day_session_tickets.count() >= self.session.room.seats_count:
             raise ValidationError('no more seats for new tickets')
         if self.date > self.session.date_finish \

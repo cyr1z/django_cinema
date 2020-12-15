@@ -123,11 +123,37 @@
                         <a href="{% url 'sessions' %}">Sessions</a>
 
                     </li>
+                      {% if request.user.is_staff %}
+                          <li>
+
+                          <a href="{% url 'createmovie' %}">Create movie</a>
+
+                    </li> <li>
+
+                          <a href="{% url 'createmovie' %}">Create movie</a>
+
+                    </li> <li>
+
+                          <a href="{% url 'createsession' %}">Create session</a>
+
+                    </li> <li>
+
+                          <a href="{% url 'createmovie' %}">Create movie</a>
+
+                    </li>
+                    <li>
+
+                          <a href="{% url 'createroom' %}">Create room</a>
+
+                    </li>
+                    {% endif %}
+                     {% if request.user.is_authenticated %}
                     <li>
 
                           <a href="{% url 'tickets' %}">My tickets</a>
 
                     </li>
+                    {% endif %}
                 </ul>
             </nav>
             {% if request.user.is_authenticated %}

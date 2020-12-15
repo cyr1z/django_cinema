@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% block content %}
+
+        <!-- Main content -->
+                <form id="edit-form" class="edit" method='POST' novalidate=''>
+
+                     {% csrf_token %}
+                    
+                    <div class="field-wrap">
+                    {{ form|crispy  }}
+                        <button type='submit' class="btn btn-md btn--warning btn--wider">Submit</button>
+                    </div>
+                </form>
+        
+        <div class="clearfix"></div>
+
+{% endblock %}

@@ -1,6 +1,7 @@
 import re
 from datetime import datetime, timedelta
 
+from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
 from django.db.models import Count, Q, Sum
 from django.shortcuts import render
@@ -10,7 +11,8 @@ from django.core.paginator import Paginator
 from django.utils.decorators import method_decorator
 from django.views.generic import CreateView, ListView, TemplateView, DetailView
 
-from cinema.forms import SignUpForm
+from cinema.forms import SignUpForm, RoomCreateForm, MovieCreateForm,\
+    SessionCreateForm
 from cinema.models import Movie, Room, Session, Ticket
 
 
@@ -128,12 +130,13 @@ class SessionDetailView(DetailView):
         return context
 
 
-# class TicketsBuyView(TemplateView):
-#     """
-#         Create a purchase
-#     """
-#     def post(self, *args, **kwargs):
-#         print(self.request.POST)
+class TicketsBuyView(CreateView):
+    """
+        Create tickets
+    """
+    pass
+
+
 @method_decorator(login_required, name='dispatch')
 class TicketsListView(ListView):
     """
@@ -152,14 +155,46 @@ class TicketsListView(ListView):
         context = super().get_context_data(object_list=object_list, **kwargs)
         old_tickets = self.object_list.filter(date__lt=self.today)
         new_tickets = self.object_list.filter(date__gte=self.today)
-        tickets_count = self.object_list.aggregate(Count('id'))['id__count']
-        money_sum = self.object_list.aggregate(
-            Sum('session__price'))['session__price__sum']
+        tickets_count = self.object_list.aggregate(Count('id'))
+        money_sum = self.object_list.aggregate(Sum('session__price'))
 
         context.update({
             'old_tickets': old_tickets,
             'new_tickets': new_tickets,
-            'tickets_count': tickets_count,
-            'money_sum': money_sum,
+            'tickets_count': tickets_count['id__count'],
+            'money_sum': money_sum['session__price__sum'],
         })
         return context
+
+
+@method_decorator(staff_member_required, name='dispatch')
+class RoomCreateView(CreateView):
+    """
+    Create products. Only for administrators.
+    """
+    model = Room
+    template_name = 'edit.html'
+    form_class = RoomCreateForm
+    success_url = '/'
+
+
+@method_decorator(staff_member_required, name='dispatch')
+class MovieCreateView(CreateView):
+    """
+    Create products. Only for administrators.
+    """
+    model = Movie
+    template_name = 'edit.html'
+    form_class = MovieCreateForm
+    success_url = '/'
+
+
+@method_decorator(staff_member_required, name='dispatch')
+class SessionCreateView(CreateView):
+    """
+    Create products. Only for administrators.
+    """
+    model = Session
+    template_name = 'edit.html'
+    form_class = SessionCreateForm
+    success_url = '/'

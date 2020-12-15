@@ -40,40 +40,29 @@
                         <p class="movie__option"><strong>Free
                             seats: </strong>{{ free_seats_count }}</p>
 
-                        {#                            <a href="#" class="comment-link">Comments:  15</a>#}
-                        {##}
+                    {% if request.user.is_authenticated %}
                         <div class="movie__btns movie__btns--full  color--grey-lighter"
                              style="padding: 20px; border: 3px solid #ffd564;">
-                            <form action="/buyticket/">
-                                <label for="exampleFormControlSelect2"><h3
-                                        style="margin-top: 0;">Select seats
-                                    numbers</h3></label>
-                                <select multiple class="custom-select"
-                                        size="10"
-                                        style="width: 100%; margin-bottom: 15px; display: flex; text-align: center; text-align-last: center; font: 15px 'aleobold', sans-serif; "
-                                    name="seats_numbers">
-                                    {#  <option selected>Open this select menu</option>#}
+                            <form action="/buyticket/" method="post">
+                            {% csrf_token %}
+                            <input type="hidden" name="session_id"  value="{{ session.id }}">
+                            <input type="hidden" name="date" value="{{ date }}">
+
+                                <label for="exampleFormControlSelect2"><h3  style="margin-top: 0;">Select seats numbers</h3></label>
+                                <select multiple class="custom-select" size="10"  style="width: 100%; margin-bottom: 15px; display: flex; text-align: center; text-align-last: center; font: 15px 'aleobold', sans-serif; " name="seats_numbers">
                                     {% for num in free_seats %}
                                         <option value="{{ num }}">{{ num }}</option>
                                     {% endfor %}
 
                                 </select>
-                                <button type="submit"
-                                        class="btn btn-md btn--warning">book a
-                                    ticket for this movie
-                                </button>
-                                {#                                <a href="#" class="watchlist">Add to watchlist</a>#}
+                                <button type="submit"  class="btn btn-md btn--warning">book a ticket for this movie</button>
                             </form>
                         </div>
-                        {##}
-                        {#                            <div class="share">#}
-                        {#                                <span class="share__marker">Share: </span>#}
-                        {#                                <div class="addthis_toolbox addthis_default_style ">#}
-                        {#                                    <a class="addthis_button_facebook_like" fb:like:layout="button_count"></a>#}
-                        {#                                    <a class="addthis_button_tweet"></a>#}
-                        {#                                    <a class="addthis_button_google_plusone" g:plusone:size="medium"></a>#}
-                        {#                                </div>#}
-                        {#                            </div>#}
+                    {% else %}
+                        <div class="movie__btns movie__btns--full">
+                                <a href="/accounts/login/" class="btn btn-md btn--warning">book a ticket for this movie</a>
+                            </div>
+                    {% endif %}
                     </div>
                 </div>
 
