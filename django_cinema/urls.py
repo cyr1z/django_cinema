@@ -18,7 +18,8 @@ from django.urls import path, include
 
 from cinema.views import Register, UserLogout, UserLogin, SessionsView, \
     TomorrowSessionsView, SessionDetailView, TicketsListView, RoomCreateView, \
-    MovieCreateView, SessionCreateView
+    MovieCreateView, SessionCreateView, SessionsListView, RoomListView, \
+    MovieListView, SessionUpdate, MovieUpdate, RoomUpdate
 
 urlpatterns = [
     path('', SessionsView.as_view(), name="sessions"),
@@ -33,4 +34,11 @@ urlpatterns = [
     path('createsession/', SessionCreateView.as_view(), name="createsession"),
     path('admin/', admin.site.urls),
     path('accounts/', include('django.contrib.auth.urls')),
+    path('sessionslist/', SessionsListView.as_view(), name="sessionslist"),
+    path('roomslist/', RoomListView.as_view(), name="roomslist"),
+    path('movieslist/', MovieListView.as_view(), name="movieslist"),
+    path('sessionedit/<int:pk>/', SessionUpdate.as_view(), name="sessionedit"),
+    path('movieedit/<int:pk>/', MovieUpdate.as_view(), name="movieedit"),
+    path('roomedit/<int:pk>/', RoomUpdate.as_view(), name="roomedit"),
+
 ]

@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block content %}
+        <!-- Main content -->
+        <section class="container">
+            <div class="col-sm-12">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <h2 class="page-heading">Movie list</h2>
+
+                        <div class="rates-wrapper rates--full">
+                            
+                            <table>
+                                <colgroup class="col-width-lg">
+                                <colgroup class="col-width">
+                                <colgroup class="col-width-sm">
+                                <colgroup class="col-width">
+                                <tr style="height: 30px;">
+                                    <td ></td>
+                                    <td > </td>
+                                    <td ></td>
+{#                                    <td ><span style="padding: 10px; font-size: large;">{{ tickets_count }} tickets worth ${{ money_sum }}</span></td>#}
+                                </tr>
+                                {% for movie in movie_list %}
+                                <tr class="rates rates">
+                                    <td class="rates__obj"><h1>{{ movie.title }}</h1></td>
+                                    <td class="rates__vote">{{ movie.duration }} minutes</td>
+                                    <td class="rates__result">
+
+                                            <a href="/movieedit/{{ movie.id }}/" class="btn btn-md btn--shine"><i class="fa fa-edit"></i> Edit</a>
+
+                                    </td>
+                                    <td class="rates__stars"><div class="score">{{ movie.director }} {{ movie.year }}</div></td>
+                                </tr>
+                                {% endfor %}
+
+                            </table>
+                        </div>
+
+                        <div class="pagination paginatioon--full coloum-wrapper">
+                            <a href='#' class="pagination__prev">prev</a>
+                            <a href='#' class="pagination__next">next</a>
+                        </div>    
+                    </div>
+
+                </div>
+            </div>
+        </section>
+        
+        <div class="clearfix"></div>
+{% endblock %}

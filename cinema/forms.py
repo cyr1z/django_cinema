@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.forms import ModelForm
 
-from cinema.models import CinemaUser, Ticket, Room, Movie, Session
+from cinema.models import CinemaUser, Room, Movie, Session
 
 
 class SignUpForm(UserCreationForm):
@@ -29,7 +29,7 @@ class SignUpForm(UserCreationForm):
 class RoomCreateForm(ModelForm):
     class Meta:
         model = Room
-        fields = ['title', 'seats_count',]
+        fields = ['title', 'seats_count']
 
 
 class MovieCreateForm(ModelForm):

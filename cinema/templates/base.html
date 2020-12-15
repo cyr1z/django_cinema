@@ -66,58 +66,7 @@
 
                 <!-- Link navigation -->
                 <ul id="navigation">
-{#                    <li>#}
-{#                        <span class="sub-nav-toggle plus"></span>#}
-{#                        <a href="#">Pages</a>#}
-{#                        <ul>#}
-{#                            <li class="menu__nav-item"><a#}
-{#                                    href="movie-page-left.html">Single movie#}
-{#                                (rigth sidebar)</a></li>#}
-{#                            <li class="menu__nav-item"><a#}
-{#                                    href="movie-page-right.html">Single movie#}
-{#                                (left sidebar)</a></li>#}
-{#                            <li class="menu__nav-item"><a#}
-{#                                    href="movie-page-full.html">Single movie#}
-{#                                (full widht)</a></li>#}
-{#                            <li class="menu__nav-item"><a#}
-{#                                    href="movie-list-left.html">Movies list#}
-{#                                (rigth sidebar)</a></li>#}
-{#                            <li class="menu__nav-item"><a#}
-{#                                    href="movie-list-right.html">Movies list#}
-{#                                (left sidebar)</a></li>#}
-{#                            <li class="menu__nav-item"><a#}
-{#                                    href="movie-list-full.html">Movies list#}
-{#                                (full widht)</a></li>#}
-{#                            <li class="menu__nav-item"><a#}
-{#                                    href="single-cinema.html">Single cinema</a>#}
-{#                            </li>#}
-{#                            <li class="menu__nav-item"><a#}
-{#                                    href="cinema-list.html">Cinemas list</a>#}
-{#                            </li>#}
-{#                            <li class="menu__nav-item"><a href="trailer.html">Trailers</a>#}
-{#                            </li>#}
-{#                            <li class="menu__nav-item"><a#}
-{#                                    href="rates-left.html">Rates (rigth#}
-{#                                sidebar)</a></li>#}
-{#                            <li class="menu__nav-item"><a#}
-{#                                    href="rates-right.html">Rates (left#}
-{#                                sidebar)</a></li>#}
-{#                            <li class="menu__nav-item"><a#}
-{#                                    href="rates-full.html">Rates (full#}
-{#                                widht)</a></li>#}
-{#                            <li class="menu__nav-item"><a href="offers.html">Offers</a>#}
-{#                            </li>#}
-{#                            <li class="menu__nav-item"><a href="contact.html">Contact#}
-{#                                us</a></li>#}
-{#                            <li class="menu__nav-item"><a href="404.html">404#}
-{#                                error</a></li>#}
-{#                            <li class="menu__nav-item"><a#}
-{#                                    href="coming-soon.html">Coming soon</a>#}
-{#                            </li>#}
-{#                            <li class="menu__nav-item"><a href="login.html">Login/Registration</a>#}
-{#                            </li>#}
-{#                        </ul>#}
-{#                    </li>#}
+
 
                     <li>
                         <a href="{% url 'sessions' %}">Sessions</a>
@@ -126,25 +75,29 @@
                       {% if request.user.is_staff %}
                           <li>
 
-                          <a href="{% url 'createmovie' %}">Create movie</a>
+                          <a href="{% url 'movieslist' %}">Movies list</a>
 
                     </li> <li>
 
-                          <a href="{% url 'createmovie' %}">Create movie</a>
+                          <a href="{% url 'sessionslist' %}">Sessions list </a>
 
-                    </li> <li>
+                    </li><li>
 
-                          <a href="{% url 'createsession' %}">Create session</a>
-
-                    </li> <li>
-
-                          <a href="{% url 'createmovie' %}">Create movie</a>
+                          <a href="{% url 'roomslist' %}">Rooms list </a>
 
                     </li>
-                    <li>
+                          <li>
+                        <span class="sub-nav-toggle plus"></span>
+                        <a href="#">Add items</a>
+                        <ul>
+                            <li class="menu__nav-item"><a
+                                    href="{% url 'createsession' %}">Create session</a></li>
+                            <li class="menu__nav-item"><a
+                                    href="{% url 'createmovie' %}">Create movie</a></li>
+                            <li class="menu__nav-item"><a
+                                    href="{% url 'createroom' %}">Create room</a></li>
 
-                          <a href="{% url 'createroom' %}">Create room</a>
-
+                        </ul>
                     </li>
                     {% endif %}
                      {% if request.user.is_authenticated %}
@@ -174,7 +127,7 @@
 {#                        </ul>#}
 
                     </div>
-                    <a href="/accounts/logout/" class="btn btn-md btn--ready"><i class="fa fa-sign-out"></i> Logout</a>
+                    <a href="/accounts/logout/" class="btn btn-md btn--default"><i class="fa fa-sign-out"></i> Logout</a>
                 </div>
             {% else %}
             <!-- Additional header buttons / Auth and direct link to booking-->

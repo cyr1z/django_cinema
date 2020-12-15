@@ -4,14 +4,11 @@ from datetime import datetime, timedelta
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
 from django.db.models import Count, Q, Sum
-from django.shortcuts import render
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView, LogoutView
-from django.core.paginator import Paginator
 from django.utils.decorators import method_decorator
-from django.views.generic import CreateView, ListView, TemplateView, DetailView
+from django.views.generic import CreateView, ListView, DetailView, UpdateView
 
-from cinema.forms import SignUpForm, RoomCreateForm, MovieCreateForm,\
+from cinema.forms import SignUpForm, RoomCreateForm, MovieCreateForm, \
     SessionCreateForm
 from cinema.models import Movie, Room, Session, Ticket
 
@@ -29,7 +26,8 @@ class Register(CreateView):
     template_name = "register.html"
 
 
-class UserLogout(LoginRequiredMixin, LogoutView):
+@method_decorator(staff_member_required, name='dispatch')
+class UserLogout(LogoutView):
     """ Logout """
     next_page = '/'
     redirect_field_name = 'next'
@@ -45,8 +43,8 @@ class SessionsView(ListView):
     today = datetime.now().date()
     tomorrow = today + timedelta(days=1)
     queryset = Session.objects.filter(
-        date_finish__gte=datetime.now().date(),
-        date_start__lte=datetime.now().date(),
+        date_finish__gte=today,
+        date_start__lte=today,
     ).annotate(
         tickets=Count('session_tickets',
                       filter=Q(session_tickets__date=today)))
@@ -73,8 +71,8 @@ class TomorrowSessionsView(ListView):
     today = datetime.now().date()
     tomorrow = today + timedelta(days=1)
     queryset = Session.objects.filter(
-        date_finish__gte=(datetime.now() + timedelta(days=1)).date(),
-        date_start__lte=(datetime.now() + timedelta(days=1)).date(),
+        date_finish__gte=tomorrow,
+        date_start__lte=tomorrow,
     ).annotate(
         tickets=Count('session_tickets',
                       filter=Q(session_tickets__date=tomorrow)))
@@ -170,31 +168,135 @@ class TicketsListView(ListView):
 @method_decorator(staff_member_required, name='dispatch')
 class RoomCreateView(CreateView):
     """
-    Create products. Only for administrators.
+    Create Room. Only for administrators.
     """
     model = Room
     template_name = 'edit.html'
     form_class = RoomCreateForm
-    success_url = '/'
+    success_url = '/roomslist/'
 
 
 @method_decorator(staff_member_required, name='dispatch')
 class MovieCreateView(CreateView):
     """
-    Create products. Only for administrators.
+    Create Movie. Only for administrators.
     """
     model = Movie
     template_name = 'edit.html'
     form_class = MovieCreateForm
-    success_url = '/'
+    success_url = '/movieslist/'
 
 
 @method_decorator(staff_member_required, name='dispatch')
 class SessionCreateView(CreateView):
     """
-    Create products. Only for administrators.
+    Create Session. Only for administrators.
     """
     model = Session
     template_name = 'edit.html'
     form_class = SessionCreateForm
-    success_url = '/'
+    success_url = '/sessionslist/'
+
+
+@method_decorator(staff_member_required, name='dispatch')
+class SessionsListView(ListView):
+    """
+    List of sessions
+    """
+    model = Session
+    paginate_by = 10
+    template_name = 'session-list.html'
+    today = datetime.now().date()
+    queryset = Session.objects.filter(date_finish__gte=today).annotate(
+        tickets=Count('session_tickets')
+    )
+
+
+@method_decorator(staff_member_required, name='dispatch')
+class RoomListView(ListView):
+    """
+    List of rooms
+    """
+    model = Room
+    paginate_by = 10
+    template_name = 'room-list.html'
+    today = datetime.now().date()
+    queryset = Room.objects.all().annotate(
+        tickets=Count('room_sessions__session_tickets')
+    )
+
+
+@method_decorator(staff_member_required, name='dispatch')
+class RoomListView(ListView):
+    """
+    List of rooms
+    """
+    model = Room
+    paginate_by = 10
+    template_name = 'room-list.html'
+    today = datetime.now().date()
+    queryset = Room.objects.all().annotate(
+        tickets=Count('room_sessions__session_tickets')
+    )
+
+
+@method_decorator(staff_member_required, name='dispatch')
+class MovieListView(ListView):
+    """
+    List of rooms
+    """
+    model = Movie
+    paginate_by = 10
+    template_name = 'movie-list.html'
+    queryset = Movie.objects.all()
+
+
+@method_decorator(staff_member_required, name='dispatch')
+class SessionUpdate(UpdateView):
+    """
+    Update session. Only for administrators.
+    """
+    model = Session
+    template_name = 'edit.html'
+    success_url = '/sessionslist/'
+    fields = [
+        'movie',
+        'room',
+        'time_start',
+        'time_finish',
+        'date_start',
+        'date_finish',
+        'price',
+    ]
+
+
+@method_decorator(staff_member_required, name='dispatch')
+class MovieUpdate(UpdateView):
+    """
+    Update Movie. Only for administrators.
+    """
+    model = Movie
+    template_name = 'edit.html'
+    success_url = '/movieslist/'
+    fields = [
+        'title',
+        'description',
+        'duration',
+        'director',
+        'year',
+        'poster',
+    ]
+
+
+@method_decorator(staff_member_required, name='dispatch')
+class RoomUpdate(UpdateView):
+    """
+    Update Room. Only for administrators.
+    """
+    model = Room
+    template_name = 'edit.html'
+    success_url = '/roomslist/'
+    fields = [
+        'title',
+        'seats_count',
+    ]
