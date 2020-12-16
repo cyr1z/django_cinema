@@ -1,6 +1,9 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from django.forms import ModelForm
+from django.core.exceptions import ValidationError
+from django.forms import ModelForm, Form
+from django.views.generic.edit import FormMixin
+from datetime import datetime, timedelta
 
 from cinema.models import CinemaUser, Room, Movie, Session
 
@@ -33,9 +36,7 @@ class RoomCreateForm(ModelForm):
 
 
 class MovieCreateForm(ModelForm):
-    # image = forms.ImageField(required=False, help_text='Optional.')
-
-    class Meta:
+   class Meta:
         model = Movie
         fields = [
             'title',
@@ -48,8 +49,6 @@ class MovieCreateForm(ModelForm):
 
 
 class SessionCreateForm(ModelForm):
-    # image = forms.ImageField(required=False, help_text='Optional.')
-
     class Meta:
         model = Session
         fields = [
@@ -61,3 +60,30 @@ class SessionCreateForm(ModelForm):
             'date_finish',
             'price',
         ]
+
+
+class BuyTicketForm(Form):
+    session = forms.IntegerField(widget=forms.HiddenInput())
+    date = forms.DateField(widget=forms.HiddenInput())
+    seat_numbers = forms.MultipleChoiceField(label='')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['seat_numbers'].choices = []
+
+    class Meta:
+        fields = [
+            'session',
+            'date',
+            'seat_numbers',
+        ]
+
+    def clean_date(self):
+        today = datetime.now().date()
+        tomorrow = today + timedelta(days=1)
+        data = self.cleaned_data['date']
+        if today <= data <= tomorrow:
+            return data
+        raise ValidationError('Invalid date')
+
+

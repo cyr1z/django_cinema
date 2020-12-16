@@ -5,11 +5,14 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
 from django.db.models import Count, Q, Sum
 from django.contrib.auth.views import LoginView, LogoutView
+from django.http import HttpResponseRedirect
+from django.urls import reverse
 from django.utils.decorators import method_decorator
-from django.views.generic import CreateView, ListView, DetailView, UpdateView
+from django.views.generic import CreateView, ListView, DetailView, UpdateView, \
+    FormView
 
 from cinema.forms import SignUpForm, RoomCreateForm, MovieCreateForm, \
-    SessionCreateForm
+    SessionCreateForm, BuyTicketForm
 from cinema.models import Movie, Room, Session, Ticket
 
 
@@ -112,14 +115,21 @@ class SessionDetailView(DetailView):
         context = super().get_context_data(object_list=object_list, **kwargs)
         # Add date today or tomorrow to context
         date = self.get_date()
-
         bought_seats = self.object.session_tickets.filter(date=date)
         bought_seats_numbers = set(i.seat_number for i in bought_seats)
         all_seats = set(range(1, self.object.room.seats_count + 1))
         free_seats = list(all_seats - bought_seats_numbers)
         free_seats_count = len(free_seats)
         session_tickets_count = len(bought_seats_numbers)
+        form = BuyTicketForm(self.request.POST or None)
+        form.fields['date'].initial = date
+        form.fields['session'].initial = self.object.id
+        free_seats_choices = [(str(x), x) for x in free_seats]
+        form.fields['seat_numbers'].choices = free_seats_choices
+        form.fields['seat_numbers'].widget.attrs.update(
+            {'class': 'form-control', 'size': '10'})
         context.update({
+            'form': form,
             'date': date,
             'free_seats': free_seats,
             'free_seats_count': free_seats_count,
@@ -128,11 +138,48 @@ class SessionDetailView(DetailView):
         return context
 
 
+@method_decorator(login_required, name='dispatch')
 class TicketsBuyView(CreateView):
     """
         Create tickets
     """
-    pass
+    form_class = BuyTicketForm
+    success_url = '/tickets/'
+
+    # sepcify name of template
+    # template_name = "edit.html"
+
+    def post(self, *args, **kwargs):
+        # save form data to object, not to database
+
+        form = BuyTicketForm(self.request.POST)
+
+        data = dict(form.data)
+        session = Session.objects.get(id=int(data['session'][0]))
+        seat_numbers = data['seat_numbers'][:]
+        text_date = data['date'][0]
+        date = datetime(*[int(item) for item in text_date.split('-')]).date()
+        user = self.request.user
+        object = {
+            'date': date,
+            'session': session,
+            'user': user,
+        }
+        objects = []
+        print(data)
+        for seat in seat_numbers:
+            object = {
+                'date': date,
+                'session': session,
+                'user': user,
+                'seat_number': int(seat)
+            }
+            objects.append(object)
+
+        print(objects)
+        Ticket.objects.bulk_create([Ticket(**q) for q in objects])
+
+        return HttpResponseRedirect(self.success_url)
 
 
 @method_decorator(login_required, name='dispatch')

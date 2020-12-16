@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
+{% load crispy_forms_tags %}
+
     <!-- Main content -->
     <section class="container">
         <div class="col-sm-12">
@@ -45,16 +47,18 @@
                              style="padding: 20px; border: 3px solid #ffd564;">
                             <form action="/buyticket/" method="post">
                             {% csrf_token %}
-                            <input type="hidden" name="session_id"  value="{{ session.id }}">
-                            <input type="hidden" name="date" value="{{ date }}">
+{#                            {{ form.session|as_crispy_field }}#}
+{#                            {{ form.date|as_crispy_field }}#}
 
                                 <label for="exampleFormControlSelect2"><h3  style="margin-top: 0;">Select seats numbers</h3></label>
-                                <select multiple class="custom-select" size="10"  style="width: 100%; margin-bottom: 15px; display: flex; text-align: center; text-align-last: center; font: 15px 'aleobold', sans-serif; " name="seats_numbers">
-                                    {% for num in free_seats %}
-                                        <option value="{{ num }}">{{ num }}</option>
-                                    {% endfor %}
-
-                                </select>
+{#                                {{ form.seat_numbers }}#}
+                                  {{ form|crispy  }}
+{#                                <select multiple class="custom-select" size="10"  style="width: 100%; margin-bottom: 15px; display: flex; text-align: center; text-align-last: center; font: 15px 'aleobold', sans-serif; " name="seats_numbers">#}
+{#                                    {% for num in free_seats %}#}
+{#                                        <option value="{{ num }}">{{ num }}</option>#}
+{#                                    {% endfor %}#}
+{##}
+{#                                </select>#}
                                 <button type="submit"  class="btn btn-md btn--warning">book a ticket for this movie</button>
                             </form>
                         </div>
@@ -346,6 +350,7 @@
         </div>
 
     </section>
-
     <div class="clearfix"></div>
+
+{#                    {{ form|crispy  }}#}
 {% endblock %}
