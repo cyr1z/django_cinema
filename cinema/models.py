@@ -1,5 +1,4 @@
 from datetime import datetime as dt, date, timedelta
-
 from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -164,6 +163,9 @@ class Ticket(models.Model):
     seat_number = models.PositiveIntegerField()
 
     def save(self, *args, **kwargs):
+        today = dt.now().date()
+        tomorrow = today + timedelta(days=1)
+
         day_session_tickets = Ticket.objects.filter(
             date=self.date,
             session=self.session
@@ -178,6 +180,11 @@ class Ticket(models.Model):
                 f'ticket date must be in {self.session.date_start} - '
                 f'{self.session.date_finish}'
             )
+        if tomorrow < self.date < today:
+            raise ValidationError('wrong date')
+        if self.date == today and self.session.date_start < dt.now().time():
+            raise ValidationError('wrong time')
+
         super().save(*args, **kwargs)
 
     class Meta:

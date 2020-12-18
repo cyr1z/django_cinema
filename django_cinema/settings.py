@@ -13,6 +13,7 @@ import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Quick-start development settings - unsuitable for production
@@ -50,6 +51,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'cinema.middleware.AutoLogout'
 ]
 
 ROOT_URLCONF = 'django_cinema.urls'
@@ -143,3 +145,7 @@ MEDIA_URL = ''
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 DURATION_OF_BREAKS = 20
+#5 minutes
+SESSION_IDLE_TIMEOUT = 5 * 60
+DATATIME_FORMAT = "%H-%M-%S %d/%m/%y"
+

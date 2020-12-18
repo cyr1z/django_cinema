@@ -6,11 +6,8 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Count, Q, Sum
 from django.contrib.auth.views import LoginView, LogoutView
 from django.http import HttpResponseRedirect
-from django.urls import reverse
 from django.utils.decorators import method_decorator
-from django.views.generic import CreateView, ListView, DetailView, UpdateView, \
-    FormView
-
+from django.views.generic import CreateView, ListView, DetailView, UpdateView
 from cinema.forms import SignUpForm, RoomCreateForm, MovieCreateForm, \
     SessionCreateForm, BuyTicketForm
 from cinema.models import Movie, Room, Session, Ticket
@@ -156,7 +153,7 @@ class TicketsBuyView(CreateView):
 
         data = dict(form.data)
         session = Session.objects.get(id=int(data['session'][0]))
-        seat_numbers = data['seat_numbers'][:]
+        seat_numbers = data['seat_numbers']
         text_date = data['date'][0]
         date = datetime(*[int(item) for item in text_date.split('-')]).date()
         user = self.request.user
@@ -165,8 +162,8 @@ class TicketsBuyView(CreateView):
             'session': session,
             'user': user,
         }
+
         objects = []
-        print(data)
         for seat in seat_numbers:
             object = {
                 'date': date,
@@ -176,7 +173,6 @@ class TicketsBuyView(CreateView):
             }
             objects.append(object)
 
-        print(objects)
         Ticket.objects.bulk_create([Ticket(**q) for q in objects])
 
         return HttpResponseRedirect(self.success_url)
