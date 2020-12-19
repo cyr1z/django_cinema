@@ -52,8 +52,8 @@ class Movie(models.Model):
     year = models.IntegerField(blank=True, null=True)
     poster = models.ImageField(
         verbose_name='Poster',
-        upload_to='static/posters',
-        default='static/default.png',
+        upload_to='media/posters',
+        default='media/default.png',
         null=True,
         blank=True
     )

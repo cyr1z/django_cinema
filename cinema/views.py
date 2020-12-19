@@ -127,7 +127,7 @@ class SessionDetailView(DetailView):
         free_seats_count = len(free_seats)
         session_tickets_count = len(bought_seats_numbers)
         form = BuyTicketForm(self.request.POST or None)
-        form.fields['date'].initial = date
+        form.fields['date'].initial = dt.strftime(date, '%Y-%m-%d')
         form.fields['session'].initial = self.object.id
         free_seats_choices = [(str(x), x) for x in free_seats]
         form.fields['seat_numbers'].choices = free_seats_choices
@@ -151,39 +151,38 @@ class TicketsBuyView(CreateView):
     form_class = BuyTicketForm
     success_url = '/tickets/'
 
-    # sepcify name of template
-    # template_name = "edit.html"
-
     def post(self, *args, **kwargs):
         # save form data to object, not to database
 
         form = BuyTicketForm(self.request.POST)
-        print(form.is_valid())
-        data = dict(form.data)
-        session = Session.objects.get(id=int(data['session'][0]))
-        seat_numbers = data['seat_numbers']
-        text_date = data['date'][0]
-        date = dt.strptime(text_date, '%Y-%m-%d').date()
-        user = self.request.user
-        object = {
-            'date': date,
-            'session': session,
-            'user': user,
-        }
+        if form.is_valid():
+            data = dict(form.cleaned_data)
+            session = Session.objects.get(id=data['session'])
+            date = data['date']
+            seat_numbers = data['seat_numbers']
 
-        objects = []
-        for seat in seat_numbers:
+            user = self.request.user
             object = {
                 'date': date,
                 'session': session,
                 'user': user,
-                'seat_number': int(seat)
             }
-            objects.append(object)
 
-        Ticket.objects.bulk_create([Ticket(**q) for q in objects])
+            objects = []
+            for seat in seat_numbers:
+                object = {
+                    'date': date,
+                    'session': session,
+                    'user': user,
+                    'seat_number': int(seat)
+                }
+                objects.append(object)
 
-        return HttpResponseRedirect(self.success_url)
+            Ticket.objects.bulk_create([Ticket(**q) for q in objects])
+
+            return HttpResponseRedirect(self.success_url)
+        else:
+            print(form.errors)
 
 
 @method_decorator(login_required, name='dispatch')

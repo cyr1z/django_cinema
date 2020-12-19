@@ -38,6 +38,7 @@
 </head>
 
 <body>
+{% load static %}
 <div class="wrapper">
     <!-- Banner -->
 {#    <div class="banner-top">#}
@@ -49,7 +50,7 @@
         <div class="container">
             <!-- Logo link-->
             <a href='/' class="logo">
-                <img alt='logo' src="/static/images/logo.png">
+                <img alt='logo' src="{% static 'images/logo.png' %}">
             </a>
 
             <!-- Main website navigation-->

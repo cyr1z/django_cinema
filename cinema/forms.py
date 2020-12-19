@@ -1,9 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from django.core.exceptions import ValidationError
 from django.forms import ModelForm, Form
-from django.views.generic.edit import FormMixin
-from datetime import datetime, timedelta
+from datetime import datetime as dt, timedelta
 
 from cinema.models import CinemaUser, Room, Movie, Session
 
@@ -36,7 +34,7 @@ class RoomCreateForm(ModelForm):
 
 
 class MovieCreateForm(ModelForm):
-   class Meta:
+    class Meta:
         model = Movie
         fields = [
             'title',
@@ -63,15 +61,23 @@ class SessionCreateForm(ModelForm):
         ]
 
 
+class MultiSeatsField(forms.MultipleChoiceField):
+    def to_python(self, value):
+        if not value:
+            return []
+        if all(i.isdigit() for i in value):
+            return list(int(i) for i in value)
+        else:
+            raise forms.ValidationError('Invalid date')
+
+    def clean(self, value):
+        return list(set(value))
+
+
 class BuyTicketForm(Form):
-    #   TODO: VALIDATORS!!!
     session = forms.IntegerField(widget=forms.HiddenInput())
     date = forms.DateField(widget=forms.HiddenInput())
-    seat_numbers = forms.MultipleChoiceField(label='')
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields['seat_numbers'].choices = []
+    seat_numbers = MultiSeatsField(label='')
 
     class Meta:
         fields = [
@@ -80,12 +86,33 @@ class BuyTicketForm(Form):
             'seat_numbers',
         ]
 
-    # def clean_date(self):
-    #     today = datetime.now().date()
-    #     tomorrow = today + timedelta(days=1)
-    #     data = self.cleaned_data['date']
-    #     if today <= data <= tomorrow:
-    #         return data
-    #     raise ValidationError('Invalid date')
+    #
+    def clean_date(self):
+        today = dt.now().date()
+        tomorrow = today + timedelta(days=1)
+        ticket_date = self.cleaned_data['date']
+        if today <= ticket_date <= tomorrow:
+            return ticket_date
+        raise forms.ValidationError('Invalid date')
 
+    #
+    def clean_session(self):
+        #     ticket_date = self.cleaned_data['date']
+        session = Session.objects.get(id=int(self.cleaned_data['session']))
+        #     if session.date_start > ticket_date or \
+        #             session.date_finish < ticket_date:
+        #         raise forms.ValidationError('Invalid session')
+        return session.id
 
+    def clean_seat_numbers(self):
+        # ticket_date = self.cleaned_data['date']
+        seats = self.cleaned_data['seat_numbers']
+        # session = Session.objects.get(id=int(self.cleaned_data['session']))
+        # bought_seats = session.session_tickets.filter(date=ticket_date)
+        # bought_seats_numbers = set(i.seat_number for i in bought_seats)
+        # all_seats = set(range(1, session.room.seats_count + 1))
+        # free_seats = all_seats - bought_seats_numbers
+        # if not set(seats).issubset(free_seats):
+        #     raise forms.ValidationError('Invalid seats numbers')
+
+        return seats

@@ -15,6 +15,8 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.conf import settings
+from django.conf.urls.static import static
 
 from cinema.views import Register, UserLogout, UserLogin, SessionsView, \
     TomorrowSessionsView, SessionDetailView, TicketsListView, RoomCreateView, \
@@ -42,4 +44,4 @@ urlpatterns = [
     path('roomedit/<int:pk>/', RoomUpdate.as_view(), name="roomedit"),
     path('buyticket/', TicketsBuyView.as_view(), name="buyticket"),
 
-]
+] + static(settings.MEDIA_URL,document_root=settings.MEDIA_ROOT)
