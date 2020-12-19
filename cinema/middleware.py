@@ -8,11 +8,7 @@ from django.utils.deprecation import MiddlewareMixin
 
 class AutoLogout(MiddlewareMixin):
     def process_request(self, request):
-        if not request.user.is_authenticated:
-            # Can't log out if not logged in
-            return
-        if request.user.is_staff:
-            # Don't log out if user is staff
+        if not request.user.is_authenticated or request.user.is_staff:
             return
         now = dt.now()
         last_action_not_decoded = request.session.get('last_action')

@@ -1,5 +1,5 @@
 import re
-from datetime import datetime, timedelta
+from datetime import datetime as dt, timedelta
 
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
@@ -12,11 +12,13 @@ from cinema.forms import SignUpForm, RoomCreateForm, MovieCreateForm, \
     SessionCreateForm, BuyTicketForm
 from cinema.models import Movie, Room, Session, Ticket
 
+from django_cinema.settings import DATE_REGEXP
 
-# Create your views here.
+
 class UserLogin(LoginView):
     """ login """
     template_name = 'login.html'
+    success_url = "/"
 
 
 class Register(CreateView):
@@ -29,7 +31,8 @@ class Register(CreateView):
 @method_decorator(staff_member_required, name='dispatch')
 class UserLogout(LogoutView):
     """ Logout """
-    next_page = '/'
+    next_page = "/"
+    success_url = "/"
     redirect_field_name = 'next'
 
 
@@ -40,11 +43,14 @@ class SessionsView(ListView):
     model = Session
     paginate_by = 10
     template_name = 'movie-list-full.html'
-    today = datetime.now().date()
+    today = dt.now().date()
+    now_time = dt.now().time()
     tomorrow = today + timedelta(days=1)
     queryset = Session.objects.filter(
         date_finish__gte=today,
         date_start__lte=today,
+    ).filter(
+        time_start__gte=now_time
     ).annotate(
         tickets=Count('session_tickets',
                       filter=Q(session_tickets__date=today)))
@@ -68,14 +74,16 @@ class TomorrowSessionsView(ListView):
     model = Session
     paginate_by = 6
     template_name = 'tomorrow-list-full.html'
-    today = datetime.now().date()
+    today = dt.now().date()
     tomorrow = today + timedelta(days=1)
     queryset = Session.objects.filter(
         date_finish__gte=tomorrow,
         date_start__lte=tomorrow,
     ).annotate(
-        tickets=Count('session_tickets',
-                      filter=Q(session_tickets__date=tomorrow)))
+        tickets=Count(
+            'session_tickets',
+            filter=Q(session_tickets__date=tomorrow))
+    )
 
     # Add date today and tomorrow to context
     def get_context_data(self, *, object_list=None, **kwargs):
@@ -98,12 +106,12 @@ class SessionDetailView(DetailView):
 
     def get_date(self):
         """ Get date from request for select today/tomorrow """
-        regexp_date = "^\d{4}\-(0[1-9]|1[012])\-(0[1-9]|[12][0-9]|3[01])$"
-        q_date = str(self.request.GET.get('date', ''))
-        today = datetime.now().date()
+        regexp_date = DATE_REGEXP
+        text_date = str(self.request.GET.get('date', ''))
+        today = dt.now().date()
         tomorrow = today + timedelta(days=1)
-        if q_date and re.match(regexp_date, q_date):
-            date = datetime(*[int(item) for item in q_date.split('-')]).date()
+        if text_date and re.match(regexp_date, text_date):
+            date = dt.strptime(text_date, '%Y-%m-%d').date()
             if today <= date <= tomorrow and date <= self.object.date_finish:
                 return date
         return today
@@ -150,12 +158,12 @@ class TicketsBuyView(CreateView):
         # save form data to object, not to database
 
         form = BuyTicketForm(self.request.POST)
-
+        print(form.is_valid())
         data = dict(form.data)
         session = Session.objects.get(id=int(data['session'][0]))
         seat_numbers = data['seat_numbers']
         text_date = data['date'][0]
-        date = datetime(*[int(item) for item in text_date.split('-')]).date()
+        date = dt.strptime(text_date, '%Y-%m-%d').date()
         user = self.request.user
         object = {
             'date': date,
@@ -181,12 +189,12 @@ class TicketsBuyView(CreateView):
 @method_decorator(login_required, name='dispatch')
 class TicketsListView(ListView):
     """
-        List of sessions
-        """
+    List of sessions
+    """
     model = Ticket
     paginate_by = 15
     template_name = 'tickets-list.html'
-    today = datetime.now().date()
+    today = dt.now().date()
 
     # add user filter to queryset
     def get_queryset(self):
@@ -249,7 +257,7 @@ class SessionsListView(ListView):
     model = Session
     paginate_by = 10
     template_name = 'session-list.html'
-    today = datetime.now().date()
+    today = dt.now().date()
     queryset = Session.objects.filter(date_finish__gte=today).annotate(
         tickets=Count('session_tickets')
     )
@@ -263,7 +271,7 @@ class RoomListView(ListView):
     model = Room
     paginate_by = 10
     template_name = 'room-list.html'
-    today = datetime.now().date()
+    today = dt.now().date()
     queryset = Room.objects.all().annotate(
         tickets=Count('room_sessions__session_tickets')
     )
@@ -277,7 +285,7 @@ class RoomListView(ListView):
     model = Room
     paginate_by = 10
     template_name = 'room-list.html'
-    today = datetime.now().date()
+    today = dt.now().date()
     queryset = Room.objects.all().annotate(
         tickets=Count('room_sessions__session_tickets')
     )

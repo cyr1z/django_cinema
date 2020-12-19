@@ -49,6 +49,7 @@ class MovieCreateForm(ModelForm):
 
 
 class SessionCreateForm(ModelForm):
+    #  TODO: VALIDATORS!!!
     class Meta:
         model = Session
         fields = [
@@ -63,6 +64,7 @@ class SessionCreateForm(ModelForm):
 
 
 class BuyTicketForm(Form):
+    #   TODO: VALIDATORS!!!
     session = forms.IntegerField(widget=forms.HiddenInput())
     date = forms.DateField(widget=forms.HiddenInput())
     seat_numbers = forms.MultipleChoiceField(label='')
@@ -78,12 +80,12 @@ class BuyTicketForm(Form):
             'seat_numbers',
         ]
 
-    def clean_date(self):
-        today = datetime.now().date()
-        tomorrow = today + timedelta(days=1)
-        data = self.cleaned_data['date']
-        if today <= data <= tomorrow:
-            return data
-        raise ValidationError('Invalid date')
+    # def clean_date(self):
+    #     today = datetime.now().date()
+    #     tomorrow = today + timedelta(days=1)
+    #     data = self.cleaned_data['date']
+    #     if today <= data <= tomorrow:
+    #         return data
+    #     raise ValidationError('Invalid date')
 
 
