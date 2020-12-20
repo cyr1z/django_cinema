@@ -27,12 +27,12 @@ from cinema.views import Register, UserLogout, UserLogin, SessionsView, \
     MovieListView, SessionUpdate, MovieUpdate, RoomUpdate, TicketsBuyView
 
 router = DefaultRouter()
-router.register(r'room_api', RoomViewSet)
-router.register(r'user_api', UserViewSet)
-router.register(r'movie_api', MovieViewSet)
-router.register(r'session_api', SessionViewSet)
-router.register(r'ticket_api', TicketViewSet)
-router.register(r'today_session_api', TodaySessionViewSet)
+router.register(r'room_api', RoomViewSet, basename='room')
+router.register(r'user_api', UserViewSet, basename='user')
+router.register(r'movie_api', MovieViewSet, basename='movie')
+router.register(r'session_api', SessionViewSet, basename='session')
+router.register(r'ticket_api', TicketViewSet, basename='ticket')
+router.register(r'today_session_api', TodaySessionViewSet, basename='today')
 
 
 urlpatterns = [
