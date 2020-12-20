@@ -17,11 +17,16 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from rest_framework.routers import DefaultRouter
 
+from cinema.API.resources import RoomViewSet
 from cinema.views import Register, UserLogout, UserLogin, SessionsView, \
     TomorrowSessionsView, SessionDetailView, TicketsListView, RoomCreateView, \
     MovieCreateView, SessionCreateView, SessionsListView, RoomListView, \
     MovieListView, SessionUpdate, MovieUpdate, RoomUpdate, TicketsBuyView
+
+router = DefaultRouter()
+router.register(r'room_api', RoomViewSet)
 
 urlpatterns = [
     path('', SessionsView.as_view(), name="sessions"),
@@ -43,5 +48,6 @@ urlpatterns = [
     path('movieedit/<int:pk>/', MovieUpdate.as_view(), name="movieedit"),
     path('roomedit/<int:pk>/', RoomUpdate.as_view(), name="roomedit"),
     path('buyticket/', TicketsBuyView.as_view(), name="buyticket"),
+    path('', include(router.urls)),
 
-] + static(settings.MEDIA_URL,document_root=settings.MEDIA_ROOT)
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

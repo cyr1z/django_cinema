@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'cinema.apps.CinemaConfig',
     'crispy_forms',
     'mathfilters',
+    'rest_framework',
 ]
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
@@ -51,7 +52,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'cinema.middleware.AutoLogout'
+    'cinema.middleware.AutoLogout',
 ]
 
 ROOT_URLCONF = 'django_cinema.urls'
@@ -137,15 +138,13 @@ LOGIN_REDIRECT_URL = '/'
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
-STATIC_URL= "/static/"
-MEDIA_ROOT= os.path.join(BASE_DIR, "media")
-MEDIA_URL="/media/"
+STATIC_URL = "/static/"
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+MEDIA_URL = "/media/"
 
 DURATION_OF_BREAKS = 20
-#5 minutes
+# 5 minutes
 SESSION_IDLE_TIMEOUT = 5 * 60
 DATATIME_FORMAT = "%H-%M-%S %d/%m/%y"
 LOGOUT_REDIRECT_URL = '/'
 DATE_REGEXP = "^\d{4}\-(0[1-9]|1[012])\-(0[1-9]|[12][0-9]|3[01])$"
-
-
