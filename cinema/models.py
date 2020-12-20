@@ -34,7 +34,7 @@ class Room(models.Model):
     """
     Cinema room
     """
-    title = models.CharField(max_length=120)
+    title = models.CharField(max_length=120, unique=True)
     seats_count = models.PositiveIntegerField()
 
     def __str__(self):
@@ -89,6 +89,7 @@ class Session(models.Model):
     date_start = models.DateField()
     date_finish = models.DateField(null=True, blank=True, )
     price = models.FloatField()
+
 
     def save(self, *args, **kwargs):
         # the session does not change after buying tickets

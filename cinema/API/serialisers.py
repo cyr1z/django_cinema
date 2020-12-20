@@ -37,7 +37,9 @@ class MovieSerializer(serializers.ModelSerializer):
 
 class SessionSerializer(serializers.ModelSerializer):
     movie = MovieSerializer()
-    room = RoomSerializer(many=True)
+    room = RoomSerializer()
+
+    # session_tickets = TicketSerializer(many=True)
 
     class Meta:
         model = Session
@@ -63,4 +65,23 @@ class TicketSerializer(serializers.ModelSerializer):
             'user',
             'date',
             'seat_number',
+        ]
+
+
+class TodaySessionSerializer(serializers.ModelSerializer):
+    movie = MovieSerializer()
+    room = RoomSerializer()
+
+    # session_tickets = TicketSerializer(many=True)
+
+    class Meta:
+        model = Session
+        fields = [
+            'movie',
+            'room',
+            'time_start',
+            'time_finish',
+            'date_start',
+            'date_finish',
+            'price',
         ]
