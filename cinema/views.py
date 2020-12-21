@@ -157,9 +157,9 @@ class TicketsBuyView(CreateView):
         form = BuyTicketForm(self.request.POST)
         if form.is_valid():
             data = dict(form.cleaned_data)
-            session = Session.objects.get(id=data['session'])
-            date = data['date']
-            seat_numbers = data['seat_numbers']
+            session = Session.objects.get(id=data.get('session'))
+            date = data.get('date')
+            seat_numbers = data.get('seat_numbers')
 
             user = self.request.user
             object = {
@@ -209,8 +209,8 @@ class TicketsListView(ListView):
         context.update({
             'old_tickets': old_tickets,
             'new_tickets': new_tickets,
-            'tickets_count': tickets_count['id__count'],
-            'money_sum': money_sum['session__price__sum'],
+            'tickets_count': tickets_count.get('id__count'),
+            'money_sum': money_sum.get('session__price__sum'),
         })
         return context
 
