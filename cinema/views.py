@@ -118,14 +118,16 @@ class SessionDetailView(DetailView):
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(object_list=object_list, **kwargs)
-        # Add date today or tomorrow to context
+        # Add date
         date = self.get_date()
+        # add free seats and tickets count
         bought_seats = self.object.session_tickets.filter(date=date)
         bought_seats_numbers = set(i.seat_number for i in bought_seats)
         all_seats = set(range(1, self.object.room.seats_count + 1))
         free_seats = list(all_seats - bought_seats_numbers)
         free_seats_count = len(free_seats)
         session_tickets_count = len(bought_seats_numbers)
+        # set form inputs values, choices and  parameters
         form = BuyTicketForm(self.request.POST or None)
         form.fields['date'].initial = dt.strftime(date, '%Y-%m-%d')
         form.fields['session'].initial = self.object.id
@@ -133,6 +135,7 @@ class SessionDetailView(DetailView):
         form.fields['seat_numbers'].choices = free_seats_choices
         form.fields['seat_numbers'].widget.attrs.update(
             {'class': 'form-control', 'size': '10'})
+
         context.update({
             'form': form,
             'date': date,
@@ -152,7 +155,6 @@ class TicketsBuyView(CreateView):
     success_url = '/tickets/'
 
     def post(self, *args, **kwargs):
-        # save form data to object, not to database
 
         form = BuyTicketForm(self.request.POST)
         if form.is_valid():
@@ -160,13 +162,7 @@ class TicketsBuyView(CreateView):
             session = Session.objects.get(id=data.get('session'))
             date = data.get('date')
             seat_numbers = data.get('seat_numbers')
-
             user = self.request.user
-            object = {
-                'date': date,
-                'session': session,
-                'user': user,
-            }
 
             objects = []
             for seat in seat_numbers:
@@ -277,23 +273,9 @@ class RoomListView(ListView):
 
 
 @method_decorator(staff_member_required, name='dispatch')
-class RoomListView(ListView):
-    """
-    List of rooms
-    """
-    model = Room
-    paginate_by = 10
-    template_name = 'room-list.html'
-    today = dt.now().date()
-    queryset = Room.objects.all().annotate(
-        tickets=Count('room_sessions__session_tickets')
-    )
-
-
-@method_decorator(staff_member_required, name='dispatch')
 class MovieListView(ListView):
     """
-    List of rooms
+    List of Movie
     """
     model = Movie
     paginate_by = 10
