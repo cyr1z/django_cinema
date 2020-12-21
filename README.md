@@ -41,7 +41,6 @@ Can view a list of purchases made by him, and the total amount spent for all tim
 Sessions can be sorted by price or start time.
 
 
-User not logged in, sees the list, can sort it, cannot
-
+User not logged in, sees the list, can sort it
 
 According to REST, add the ability to obtain information about all sessions for today, which begin at a certain period of time and / or go in a particular room.
