@@ -79,40 +79,34 @@ class BuyTicketForm(Form):
     date = forms.DateField(widget=forms.HiddenInput())
     seat_numbers = MultiSeatsField(label='')
 
-    class Meta:
-        fields = [
-            'session',
-            'date',
-            'seat_numbers',
-        ]
-
-    #
     def clean_date(self):
         today = dt.now().date()
         tomorrow = today + timedelta(days=1)
-        ticket_date = self.cleaned_data['date']
+        ticket_date = self.cleaned_data.get('date')
         if today <= ticket_date <= tomorrow:
             return ticket_date
         raise forms.ValidationError('Invalid date')
 
-    #
-    def clean_session(self):
-        #     ticket_date = self.cleaned_data['date']
-        session = Session.objects.get(id=int(self.cleaned_data['session']))
-        #     if session.date_start > ticket_date or \
-        #             session.date_finish < ticket_date:
-        #         raise forms.ValidationError('Invalid session')
-        return session.id
+    def clean(self):
+        cleaned_data = super().clean()
+        date = cleaned_data.get("date")
+        session_id = int(cleaned_data.get("session"))
 
-    def clean_seat_numbers(self):
-        # ticket_date = self.cleaned_data['date']
-        seats = self.cleaned_data['seat_numbers']
-        # session = Session.objects.get(id=int(self.cleaned_data['session']))
-        # bought_seats = session.session_tickets.filter(date=ticket_date)
-        # bought_seats_numbers = set(i.seat_number for i in bought_seats)
-        # all_seats = set(range(1, session.room.seats_count + 1))
-        # free_seats = all_seats - bought_seats_numbers
-        # if not set(seats).issubset(free_seats):
-        #     raise forms.ValidationError('Invalid seats numbers')
+        if all(i.isdigit() for i in cleaned_data.get("seat_numbers")):
+            seat_numbers = (int(i) for i in cleaned_data.get("seat_numbers"))
+            seat_numbers = set(seat_numbers)
+        else:
+            raise forms.ValidationError('Invalid seat numbers')
 
-        return seats
+        session = Session.objects.get(id=session_id)
+        bought_seats = session.session_tickets.filter(date=date)
+        bought_seats_numbers = set(i.seat_number for i in bought_seats)
+        all_seats = set(range(1, session.room.seats_count + 1))
+        free_seats = all_seats - bought_seats_numbers
+
+        if not set(seat_numbers).issubset(free_seats):
+            raise forms.ValidationError('Invalid seats numbers')
+
+        if session.date_start > date or \
+                session.date_finish < date:
+            raise forms.ValidationError('Invalid session')

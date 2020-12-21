@@ -66,27 +66,3 @@ class TicketSerializer(serializers.ModelSerializer):
             'date',
             'seat_number',
         ]
-
-#
-# class TodaySessionSerializer(serializers.Serializer):
-#     movie = MovieSerializer()
-#     room = RoomSerializer()
-#     time_start = serializers.TimeField()
-#     time_finish = serializers.TimeField()
-#     date_start = serializers.DateField()
-#     date_finish = serializers.DateField()
-#     price = serializers.FloatField()
-
-    # session_tickets = TicketSerializer(many=True)
-
-    # class Meta:
-    #     model = Session
-    #     fields = [
-    #         'movie',
-    #         'room',
-    #         'time_start',
-    #         'time_finish',
-    #         'date_start',
-    #         'date_finish',
-    #         'price',
-    #     ]
