@@ -178,8 +178,23 @@ class TicketsBuyView(CreateView):
             session = Session.objects.get(id=data.get('session'))
 
             date = data.get('date')
-            seat_numbers = data.get('seat_numbers')
+            seat_numbers_str = data.get('seat_numbers')
+            seat_numbers = set(int(i) for i in seat_numbers_str)
             user = self.request.user
+
+            bought_seats = session.session_tickets.filter(date=date)
+            bought_seats_numbers = set(i.seat_number for i in bought_seats)
+            all_seats = set(range(1, session.room.seats_count + 1))
+            free_seats = all_seats - bought_seats_numbers
+            if not set(seat_numbers).issubset(free_seats):
+                messages.error(self.request, 'Invalid seats')
+                return HttpResponseRedirect(
+                    self.request.META.get('HTTP_REFERER'))
+
+            if session.date_start > date or session.date_finish < date:
+                messages.error(self.request, 'Invalid session')
+                return HttpResponseRedirect(
+                    self.request.META.get('HTTP_REFERER'))
 
             objects = []
             for seat in seat_numbers:
@@ -196,11 +211,8 @@ class TicketsBuyView(CreateView):
             return HttpResponseRedirect(self.success_url)
         else:
             data = dict(form.cleaned_data)
-            # session = Session.objects.get(id=data.get('session'))
-            # date = data.get('date').strftime('%Y-%m-%d')
             err = form.errors.get('__all__')
             messages.error(self.request, err)
-            # back_url = '/session/' + str(session.id) + '/?date=' + date
             return HttpResponseRedirect(self.request.META.get('HTTP_REFERER'))
 
 

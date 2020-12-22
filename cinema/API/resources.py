@@ -90,7 +90,7 @@ class TodaySessionViewSet(generics.ListAPIView, ViewSet):
         """
         today = dt.now().date()
 
-        queryset = queryset = Session.objects.filter(
+        queryset = Session.objects.filter(
             date_finish__gte=today,
             date_start__lte=today,
         )
