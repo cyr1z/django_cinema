@@ -149,3 +149,5 @@ SESSION_IDLE_TIMEOUT = 5 * 60
 DATATIME_FORMAT = "%H-%M-%S %d/%m/%y"
 LOGOUT_REDIRECT_URL = '/'
 DATE_REGEXP = "^\d{4}\-(0[1-9]|1[012])\-(0[1-9]|[12][0-9]|3[01])$"
+DEFAULT_SESSION_ORDERING = '-time_start'
+SESSION_ORDERINGS = ['-time_start', 'time_start', 'price', '-price']

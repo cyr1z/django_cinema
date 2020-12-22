@@ -12,7 +12,8 @@ from cinema.forms import SignUpForm, RoomCreateForm, MovieCreateForm, \
     SessionCreateForm, BuyTicketForm
 from cinema.models import Movie, Room, Session, Ticket
 
-from django_cinema.settings import DATE_REGEXP
+from django_cinema.settings import DATE_REGEXP, DEFAULT_SESSION_ORDERING, \
+    SESSION_ORDERINGS
 
 
 class UserLogin(LoginView):
@@ -55,6 +56,13 @@ class SessionsView(ListView):
         tickets=Count('session_tickets',
                       filter=Q(session_tickets__date=today)))
 
+    def get_ordering(self):
+        ordering = self.request.GET.get('ordering', DEFAULT_SESSION_ORDERING)
+        # validate ordering here
+        if ordering not in SESSION_ORDERINGS:
+            ordering = DEFAULT_SESSION_ORDERING
+        return ordering
+
     # Add date today and tomorrow to context
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(object_list=object_list, **kwargs)
@@ -84,6 +92,13 @@ class TomorrowSessionsView(ListView):
             'session_tickets',
             filter=Q(session_tickets__date=tomorrow))
     )
+
+    def get_ordering(self):
+        ordering = self.request.GET.get('ordering', DEFAULT_SESSION_ORDERING)
+        # validate ordering here
+        if ordering not in SESSION_ORDERINGS:
+            ordering = DEFAULT_SESSION_ORDERING
+        return ordering
 
     # Add date today and tomorrow to context
     def get_context_data(self, *, object_list=None, **kwargs):
@@ -256,6 +271,8 @@ class SessionsListView(ListView):
     queryset = Session.objects.filter(date_finish__gte=today).annotate(
         tickets=Count('session_tickets')
     )
+
+
 
 
 @method_decorator(staff_member_required, name='dispatch')
