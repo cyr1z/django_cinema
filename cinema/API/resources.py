@@ -9,7 +9,8 @@ from rest_framework.permissions import IsAuthenticated, IsAdminUser, \
 from rest_framework.viewsets import ViewSet
 
 from cinema.API.serialisers import RoomSerializer, UserSerializer, \
-    MovieSerializer, SessionSerializer, TicketSerializer
+    MovieSerializer, SessionSerializer, TicketSerializer, \
+    SessionAdminSerializer, TicketAdminSerializer
 from cinema.models import Room, CinemaUser, Movie, Session, Ticket
 
 
@@ -49,20 +50,35 @@ class SessionViewSet(viewsets.ModelViewSet):
     serializer_class = SessionSerializer
     queryset = Session.objects.all()
     authentication_classes = [BasicAuthentication, ]
-    permission_classes = [IsAdminUser | ReadOnly]
+    permission_classes = [ReadOnly]
+
+
+class SessionAdminViewSet(viewsets.ModelViewSet):
+    serializer_class = SessionAdminSerializer
+    queryset = Session.objects.all()
+    authentication_classes = [BasicAuthentication, ]
+    permission_classes = [IsAdminUser]
 
 
 class TicketViewSet(viewsets.ModelViewSet):
     serializer_class = TicketSerializer
+    # ??
     queryset = Ticket.objects.all()
     authentication_classes = [BasicAuthentication, ]
-    permission_classes = [IsAdminUser | AuthorizedCreate | ReadOnly]
+    permission_classes = [IsAuthenticated & ReadOnly]
+
+
+class TicketAdminViewSet(viewsets.ModelViewSet):
+    serializer_class = TicketAdminSerializer
+    queryset = Ticket.objects.all()
+    authentication_classes = [BasicAuthentication, ]
+    permission_classes = [IsAdminUser | AuthorizedCreate]
 
 
 class TodaySessionViewSet(generics.ListAPIView, ViewSet):
     serializer_class = SessionSerializer
     authentication_classes = [BasicAuthentication, ]
-    permission_classes = [IsAuthenticated | ReadOnly]
+    permission_classes = [ReadOnly]
 
     def get_queryset(self):
         """

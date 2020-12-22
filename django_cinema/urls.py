@@ -20,7 +20,8 @@ from django.conf.urls.static import static
 from rest_framework.routers import DefaultRouter
 
 from cinema.API.resources import RoomViewSet, UserViewSet, MovieViewSet, \
-    SessionViewSet, TicketViewSet, TodaySessionViewSet
+    SessionViewSet, TicketViewSet, TodaySessionViewSet, SessionAdminViewSet, \
+    TicketAdminViewSet
 from cinema.views import Register, UserLogout, UserLogin, SessionsView, \
     TomorrowSessionsView, SessionDetailView, TicketsListView, RoomCreateView, \
     MovieCreateView, SessionCreateView, SessionsListView, RoomListView, \
@@ -31,6 +32,8 @@ router.register(r'room_api', RoomViewSet, basename='room')
 router.register(r'user_api', UserViewSet, basename='user')
 router.register(r'movie_api', MovieViewSet, basename='movie')
 router.register(r'session_api', SessionViewSet, basename='session')
+router.register(r'session_admin_api', SessionAdminViewSet, basename='session_admin')
+router.register(r'ticket_admin_api', TicketAdminViewSet, basename='ticket_admin')
 router.register(r'ticket_api', TicketViewSet, basename='ticket')
 router.register(r'today_session_api', TodaySessionViewSet, basename='today')
 

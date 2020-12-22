@@ -23,14 +23,23 @@ class SignUpForm(UserCreationForm):
 
     class Meta:
         model = CinemaUser
-        fields = ('username', 'first_name', 'last_name',
-                  'email', 'phone', 'password1', 'password2',)
+        fields = [
+            'username',
+            'first_name',
+            'last_name',
+            'email',
+            'phone',
+            'password1',
+            'password2',
+        ]
 
 
 class RoomCreateForm(ModelForm):
     class Meta:
         model = Room
-        fields = ['title', 'seats_count']
+        fields = [
+            'title',
+            'seats_count']
 
 
 class MovieCreateForm(ModelForm):
@@ -91,9 +100,10 @@ class BuyTicketForm(Form):
         cleaned_data = super().clean()
         date = cleaned_data.get("date")
         session_id = int(cleaned_data.get("session"))
+        seat_numbers_str = cleaned_data.get("seat_numbers")
 
-        if all(i.isdigit() for i in cleaned_data.get("seat_numbers")):
-            seat_numbers = (int(i) for i in cleaned_data.get("seat_numbers"))
+        if all(i.isdigit() for i in seat_numbers_str):
+            seat_numbers = (int(i) for i in seat_numbers_str)
             seat_numbers = set(seat_numbers)
         else:
             raise forms.ValidationError('Invalid seat numbers')
