@@ -43,25 +43,33 @@
                             seats: </strong>{{ free_seats_count }}</p>
 
                     {% if request.user.is_authenticated %}
+
                         <div class="movie__btns movie__btns--full  color--grey-lighter"
                              style="padding: 20px; border: 3px solid #ffd564;">
+                        {% if messages %}
+                        <ul class="messages">
+                        {% for message in messages %}
+                            <li{% if message.tags %} class="alert alert-warning"{% endif %}>
+                                {{ message }}
+                            {{ error|escape }}
+                            </li>
+                        {% endfor %}
+                        </ul>
+                    {% endif %}
+                         {% if free_seats_count %}
                             <form action="/buyticket/" method="post">
                             {% csrf_token %}
-{#                            {{ form.session|as_crispy_field }}#}
-{#                            {{ form.date|as_crispy_field }}#}
-
                                 <label for="exampleFormControlSelect2"><h3  style="margin-top: 0;">Select seats numbers</h3></label>
-{#                                {{ form.seat_numbers }}#}
+
                                   {{ form|crispy  }}
-{#                                <select multiple class="custom-select" size="10"  style="width: 100%; margin-bottom: 15px; display: flex; text-align: center; text-align-last: center; font: 15px 'aleobold', sans-serif; " name="seats_numbers">#}
-{#                                    {% for num in free_seats %}#}
-{#                                        <option value="{{ num }}">{{ num }}</option>#}
-{#                                    {% endfor %}#}
-{##}
-{#                                </select>#}
+
                                 <button type="submit"  class="btn btn-md btn--warning">book a ticket for this movie</button>
                             </form>
+                                                    {% else %}
+                            sorry, no free tickets
+                            {% endif %}
                         </div>
+
                     {% else %}
                         <div class="movie__btns movie__btns--full">
                                 <a href="/accounts/login/" class="btn btn-md btn--warning">book a ticket for this movie</a>

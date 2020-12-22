@@ -1,6 +1,7 @@
 import re
 from datetime import datetime as dt, timedelta
 
+from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
 from django.db.models import Count, Q, Sum
@@ -13,7 +14,7 @@ from cinema.forms import SignUpForm, RoomCreateForm, MovieCreateForm, \
 from cinema.models import Movie, Room, Session, Ticket
 
 from django_cinema.settings import DATE_REGEXP, DEFAULT_SESSION_ORDERING, \
-    SESSION_ORDERINGS
+    SESSION_ORDERINGS, DATATIME_FORMAT
 
 
 class UserLogin(LoginView):
@@ -175,6 +176,7 @@ class TicketsBuyView(CreateView):
         if form.is_valid():
             data = dict(form.cleaned_data)
             session = Session.objects.get(id=data.get('session'))
+
             date = data.get('date')
             seat_numbers = data.get('seat_numbers')
             user = self.request.user
@@ -193,7 +195,13 @@ class TicketsBuyView(CreateView):
 
             return HttpResponseRedirect(self.success_url)
         else:
-            print(form.errors)
+            data = dict(form.cleaned_data)
+            # session = Session.objects.get(id=data.get('session'))
+            # date = data.get('date').strftime('%Y-%m-%d')
+            err = form.errors.get('__all__')
+            messages.error(self.request, err)
+            # back_url = '/session/' + str(session.id) + '/?date=' + date
+            return HttpResponseRedirect(self.request.META.get('HTTP_REFERER'))
 
 
 @method_decorator(login_required, name='dispatch')
@@ -271,8 +279,6 @@ class SessionsListView(ListView):
     queryset = Session.objects.filter(date_finish__gte=today).annotate(
         tickets=Count('session_tickets')
     )
-
-
 
 
 @method_decorator(staff_member_required, name='dispatch')

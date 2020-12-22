@@ -98,25 +98,34 @@ class BuyTicketForm(Form):
 
     def clean(self):
         cleaned_data = super().clean()
-        date = cleaned_data.get("date")
-        session_id = int(cleaned_data.get("session"))
-        seat_numbers_str = cleaned_data.get("seat_numbers")
+        today = dt.now().date()
+        tomorrow = today + timedelta(days=1)
+        try:
+            date = cleaned_data.get('date')
+            if today > date > tomorrow:
+                raise forms.ValidationError('Invalid date')
+        except:
+            raise forms.ValidationError('Invalid date')
 
+        seat_numbers_str = cleaned_data.get("seat_numbers")
         if all(i.isdigit() for i in seat_numbers_str):
             seat_numbers = (int(i) for i in seat_numbers_str)
             seat_numbers = set(seat_numbers)
         else:
             raise forms.ValidationError('Invalid seat numbers')
 
+
+        try:
+            session_id = int(cleaned_data.get("session"))
+        except:
+            raise forms.ValidationError('Invalid session')
         session = Session.objects.get(id=session_id)
         bought_seats = session.session_tickets.filter(date=date)
         bought_seats_numbers = set(i.seat_number for i in bought_seats)
         all_seats = set(range(1, session.room.seats_count + 1))
         free_seats = all_seats - bought_seats_numbers
-
         if not set(seat_numbers).issubset(free_seats):
             raise forms.ValidationError('Invalid seats numbers')
 
-        if session.date_start > date or \
-                session.date_finish < date:
+        if session.date_start > date or session.date_finish < date:
             raise forms.ValidationError('Invalid session')
