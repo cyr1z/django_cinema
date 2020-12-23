@@ -90,7 +90,6 @@ class Session(models.Model):
     date_finish = models.DateField(null=True, blank=True, )
     price = models.FloatField()
 
-
     def save(self, *args, **kwargs):
         # the session does not change after buying tickets
         if self.session_tickets.count():

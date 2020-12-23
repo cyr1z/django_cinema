@@ -4,6 +4,7 @@ from cinema.models import Movie, Session, Room, Ticket, CinemaUser
 
 
 class UserSerializer(serializers.ModelSerializer):
+    # TODO: !!!! 2 PASS FOR CREATE
     class Meta:
         model = CinemaUser
         fields = [
@@ -39,7 +40,6 @@ class SessionSerializer(serializers.ModelSerializer):
     movie = MovieSerializer()
     room = RoomSerializer()
 
-
     class Meta:
         model = Session
         fields = [
@@ -54,7 +54,6 @@ class SessionSerializer(serializers.ModelSerializer):
 
 
 class SessionAdminSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Session
         fields = [
@@ -91,3 +90,4 @@ class TicketAdminSerializer(serializers.ModelSerializer):
             'date',
             'seat_number',
         ]
+

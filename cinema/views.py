@@ -1,5 +1,5 @@
 import re
-from datetime import datetime as dt, timedelta
+from datetime import datetime as dt, timedelta, date
 
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
@@ -14,7 +14,7 @@ from cinema.forms import SignUpForm, RoomCreateForm, MovieCreateForm, \
 from cinema.models import Movie, Room, Session, Ticket
 
 from django_cinema.settings import DATE_REGEXP, DEFAULT_SESSION_ORDERING, \
-    SESSION_ORDERINGS, DATATIME_FORMAT
+    SESSION_ORDERINGS, DATATIME_FORMAT, DURATION_OF_BREAKS
 
 
 class UserLogin(LoginView):
@@ -175,7 +175,12 @@ class TicketsBuyView(CreateView):
         form = BuyTicketForm(self.request.POST)
         if form.is_valid():
             data = dict(form.cleaned_data)
-            session = Session.objects.get(id=data.get('session'))
+            try:
+                session = Session.objects.get(id=data.get('session'))
+            except:
+                messages.error(self.request, 'Invalid session')
+                return HttpResponseRedirect(
+                    self.request.META.get('HTTP_REFERER'))
 
             date = data.get('date')
             seat_numbers_str = data.get('seat_numbers')
@@ -192,7 +197,7 @@ class TicketsBuyView(CreateView):
                     self.request.META.get('HTTP_REFERER'))
 
             if session.date_start > date or session.date_finish < date:
-                messages.error(self.request, 'Invalid session')
+                messages.error(self.request, 'Invalid session date')
                 return HttpResponseRedirect(
                     self.request.META.get('HTTP_REFERER'))
 
@@ -210,7 +215,6 @@ class TicketsBuyView(CreateView):
 
             return HttpResponseRedirect(self.success_url)
         else:
-            data = dict(form.cleaned_data)
             err = form.errors.get('__all__')
             messages.error(self.request, err)
             return HttpResponseRedirect(self.request.META.get('HTTP_REFERER'))
@@ -278,6 +282,72 @@ class SessionCreateView(CreateView):
     form_class = SessionCreateForm
     success_url = '/sessionslist/'
 
+    def form_valid(self, form):
+        """If the form is valid, save the associated model."""
+        obj = form.cleaned_data
+
+        # autofill the finish time field
+        movie_duration = obj.get('movie').duration
+        session_time_finish = obj.get('time_finish')
+        session_time_start = obj.get('time_start')
+        session_date_finish = obj.get('date_finish')
+        session_date_start = obj.get('date_start')
+        movie_title = obj.get('movie').title
+        movie_duration_format = obj.get('movie').duration_format
+        room = obj.get('room')
+
+        if not session_time_finish:
+            td = timedelta(minutes=movie_duration + DURATION_OF_BREAKS)
+            time = dt.combine(date.min, session_time_start)
+            session_time_finish = obj['time_finish'] = (time + td).time()
+
+        # finish time must be bigger than start time
+        if session_time_start >= session_time_finish:
+            messages.error(self.request, 'Wrong end time')
+            return HttpResponseRedirect(
+                self.request.META.get('HTTP_REFERER'))
+
+        # session duration must be longer or equal than movie duration
+        finish = dt.combine(date.min, session_time_finish)
+        start = dt.combine(date.min, session_time_start)
+        session_duration = (finish - start).seconds // 60
+        if movie_duration > session_duration:
+            time_short_err = f'session too short for {movie_title}' \
+                             f' movie. Should be more then ' \
+                             f'{movie_duration_format}'
+            messages.error(self.request, time_short_err)
+            return HttpResponseRedirect(
+                self.request.META.get('HTTP_REFERER'))
+
+        # sessions should not overlap
+        sessions_start = Session.objects.filter(
+            date_start__gte=str(session_date_start),
+            date_start__lte=str(session_date_finish),
+            room=room
+        )
+        sessions_finish = Session.objects.filter(
+            date_finish__gte=session_date_start,
+            date_finish__lte=session_date_finish,
+            room=room
+        )
+        sessions = sessions_start | sessions_finish
+
+        for session in sessions:
+            if session.time_start <= session_time_start <= session.time_finish:
+                time_err = f"start time isn't free at { session.date_start}" \
+                           f" - {session.date_finish} / {session.movie.title}"
+                messages.error(self.request, time_err)
+                return HttpResponseRedirect(
+                    self.request.META.get('HTTP_REFERER'))
+            if session.time_start <= session_time_finish <= session.time_finish:
+                time_err = f"finish time isn't free at {session.date_start}" \
+                           f" - {session.date_finish} / {session.movie.title}"
+                messages.error(self.request, time_err)
+                return HttpResponseRedirect(
+                    self.request.META.get('HTTP_REFERER'))
+
+        return super().form_valid(form)
+
 
 @method_decorator(staff_member_required, name='dispatch')
 class SessionsListView(ListView):
@@ -335,6 +405,86 @@ class SessionUpdate(UpdateView):
         'date_finish',
         'price',
     ]
+
+    def form_valid(self, form):
+        """If the form is valid, save the associated model."""
+        obj = form.cleaned_data
+
+        # autofill the finish time field
+        movie_duration = obj.get('movie').duration
+        session_time_finish = obj.get('time_finish')
+        session_time_start = obj.get('time_start')
+        session_date_finish = obj.get('date_finish')
+        session_date_start = obj.get('date_start')
+        movie_title = obj.get('movie').title
+        movie_duration_format = obj.get('movie').duration_format
+        room = obj.get('room')
+
+        try:
+            session = self.object
+        except:
+            messages.error(self.request, 'Invalid session')
+            return HttpResponseRedirect(
+                self.request.META.get('HTTP_REFERER'))
+
+        if session.session_tickets.count():
+            messages.error(self.request, 'The session has a ticket')
+            return HttpResponseRedirect(
+                self.request.META.get('HTTP_REFERER'))
+
+        if not session_time_finish:
+            td = timedelta(minutes=movie_duration + DURATION_OF_BREAKS)
+            time = dt.combine(date.min, session_time_start)
+            session_time_finish = obj['time_finish'] = (time + td).time()
+
+        # finish time must be bigger than start time
+        if session_time_start >= session_time_finish:
+            messages.error(self.request, 'Wrong end time')
+            return HttpResponseRedirect(
+                self.request.META.get('HTTP_REFERER'))
+
+        # session duration must be longer or equal than movie duration
+        finish = dt.combine(date.min, session_time_finish)
+        start = dt.combine(date.min, session_time_start)
+        session_duration = (finish - start).seconds // 60
+        if movie_duration > session_duration:
+            time_short_err = f'session too short for {movie_title}' \
+                             f' movie. Should be more then ' \
+                             f'{movie_duration_format}'
+            messages.error(self.request, time_short_err)
+            return HttpResponseRedirect(
+                self.request.META.get('HTTP_REFERER'))
+
+        # sessions should not overlap
+        sessions_start = Session.objects.filter(
+            date_start__gte=str(session_date_start),
+            date_start__lte=str(session_date_finish),
+            room=room
+        )
+        sessions_finish = Session.objects.filter(
+            date_finish__gte=session_date_start,
+            date_finish__lte=session_date_finish,
+            room=room
+        )
+        sessions = sessions_start | sessions_finish
+
+        for session in sessions:
+            if session.time_start <= session_time_start <= session.time_finish:
+                time_err = f"start time isn't free at { session.date_start}" \
+                           f" - {session.date_finish} / {session.movie.title}"
+                messages.error(self.request, time_err)
+                return HttpResponseRedirect(
+                    self.request.META.get('HTTP_REFERER'))
+            if session.time_start <= session_time_finish <= session.time_finish:
+                time_err = f"finish time isn't free at {session.date_start}" \
+                           f" - {session.date_finish} / {session.movie.title}"
+                messages.error(self.request, time_err)
+                return HttpResponseRedirect(
+                    self.request.META.get('HTTP_REFERER'))
+
+        return super().form_valid(form)
+
+
 
 
 @method_decorator(staff_member_required, name='dispatch')
