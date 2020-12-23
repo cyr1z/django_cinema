@@ -174,15 +174,21 @@ class Ticket(models.Model):
         # the count of seats in the room
         if day_session_tickets.count() >= self.session.room.seats_count:
             raise ValidationError('no more seats for new tickets')
+
+        # ticket day must be in session period
         if self.date > self.session.date_finish \
                 or self.date < self.session.date_start:
             raise ValidationError(
                 f'ticket date must be in {self.session.date_start} - '
                 f'{self.session.date_finish}'
             )
+
+        # ticket day must be tomorrow or today
         if tomorrow < self.date < today:
             raise ValidationError('wrong date')
-        if self.date == today and self.session.date_start < dt.now().time():
+
+        # ticket time must be greater than now
+        if self.date == today and self.session.time_start < dt.now().time():
             raise ValidationError('wrong time')
 
         super().save(*args, **kwargs)

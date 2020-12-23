@@ -186,7 +186,10 @@ class TicketsBuyView(CreateView):
             seat_numbers_str = data.get('seat_numbers')
             seat_numbers = set(int(i) for i in seat_numbers_str)
             user = self.request.user
-
+            today = dt.now().date()
+            tomorrow = today + timedelta(days=1)
+            now = dt.now()
+            # ticket must have the free seat
             bought_seats = session.session_tickets.filter(date=date)
             bought_seats_numbers = set(i.seat_number for i in bought_seats)
             all_seats = set(range(1, session.room.seats_count + 1))
@@ -196,8 +199,21 @@ class TicketsBuyView(CreateView):
                 return HttpResponseRedirect(
                     self.request.META.get('HTTP_REFERER'))
 
+            # ticket date must  be in session period
             if session.date_start > date or session.date_finish < date:
                 messages.error(self.request, 'Invalid session date')
+                return HttpResponseRedirect(
+                    self.request.META.get('HTTP_REFERER'))
+
+            # ticket day must be tomorrow or today
+            if tomorrow < date < today:
+                messages.error(self.request, 'wrong date')
+                return HttpResponseRedirect(
+                    self.request.META.get('HTTP_REFERER'))
+
+            # ticket time must be greater than now
+            if date == today and session.time_start < now.time():
+                messages.error(self.request, 'wrong time')
                 return HttpResponseRedirect(
                     self.request.META.get('HTTP_REFERER'))
 
