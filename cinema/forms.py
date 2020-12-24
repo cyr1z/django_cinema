@@ -56,7 +56,6 @@ class MovieCreateForm(ModelForm):
 
 
 class SessionCreateForm(ModelForm):
-    #  TODO: VALIDATORS!!!
     class Meta:
         model = Session
         fields = [

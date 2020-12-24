@@ -32,10 +32,6 @@ class RegisterSerializer(serializers.ModelSerializer):
         model = CinemaUser
         fields = ('username', 'password', 'password2', 'email', 'first_name',
                   'last_name', 'phone')
-        # extra_kwargs = {
-        #     'first_name': {'required': True},
-        #     'last_name': {'required': True}
-        # }
 
     def validate(self, attrs):
         if attrs['password'] != attrs['password2']:
@@ -97,6 +93,7 @@ class SessionSerializer(serializers.ModelSerializer):
 
 
 class SessionAdminSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = Session
         fields = [

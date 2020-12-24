@@ -1,17 +1,19 @@
-from datetime import datetime as dt
+from datetime import datetime as dt, date, timedelta
 
-from rest_framework import viewsets, generics
+from rest_framework import viewsets, generics, status, serializers
 from rest_framework.authentication import BasicAuthentication
 # from rest_framework.generics import get_object_or_404
 # from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, IsAdminUser, \
     SAFE_METHODS, BasePermission
+from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
 
 from cinema.API.serialisers import RoomSerializer, UserSerializer, \
     MovieSerializer, SessionSerializer, TicketSerializer, \
-    SessionAdminSerializer, TicketAdminSerializer, RegisterSerializer
+    TicketAdminSerializer, RegisterSerializer, SessionAdminSerializer
 from cinema.models import Room, CinemaUser, Movie, Session, Ticket
+from django_cinema.settings import DURATION_OF_BREAKS
 
 
 class ReadOnly(BasePermission):
@@ -32,6 +34,8 @@ class Register(BasePermission):
 
 
 class RoomViewSet(viewsets.ModelViewSet):
+    # TODO: check has a ticket
+
     serializer_class = RoomSerializer
     queryset = Room.objects.all()
     authentication_classes = [BasicAuthentication, ]
@@ -39,6 +43,8 @@ class RoomViewSet(viewsets.ModelViewSet):
 
 
 class UserViewSet(viewsets.ModelViewSet):
+    # TODO: delete
+
     serializer_class = UserSerializer
     queryset = CinemaUser.objects.all()
     authentication_classes = [BasicAuthentication, ]
@@ -63,17 +69,91 @@ class MovieViewSet(viewsets.ModelViewSet):
 
 
 class SessionViewSet(viewsets.ModelViewSet):
+    # TODO: check has a ticket, time and date
+
     serializer_class = SessionSerializer
     queryset = Session.objects.all()
     authentication_classes = [BasicAuthentication, ]
-    permission_classes = [ReadOnly]
+    permission_classes = [IsAdminUser | ReadOnly]
 
+    def get_serializer_class(self):
+        print(self.request.method)
+        if hasattr(self.request, 'method'):
+            if self.request.method in SAFE_METHODS:
+                return SessionSerializer
+            elif self.request.method == 'POST':
+                return SessionAdminSerializer
+            else:
+                return UserSerializer
 
-class SessionAdminViewSet(viewsets.ModelViewSet):
-    serializer_class = SessionAdminSerializer
-    queryset = Session.objects.all()
-    authentication_classes = [BasicAuthentication, ]
-    permission_classes = [IsAdminUser]
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        print(serializer.validated_data)
+
+        obj = serializer.validated_data
+
+        movie_duration = obj.get('movie').duration
+        session_time_finish = obj.get('time_finish')
+        session_time_start = obj.get('time_start')
+        session_date_finish = obj.get('date_finish')
+        session_date_start = obj.get('date_start')
+        movie_title = obj.get('movie').title
+        movie_duration_format = obj.get('movie').duration_format
+        room = obj.get('room')
+
+        # autofill the finish time field
+        if not session_time_finish:
+            td = timedelta(minutes=movie_duration + DURATION_OF_BREAKS)
+            time = dt.combine(date.min, session_time_start)
+            session_time_finish = obj['time_finish'] = (time + td).time()
+            serializer.validated_data['time_finish'] = session_time_finish
+
+        # finish time must be bigger than start time
+        if session_time_start >= session_time_finish:
+            raise serializers.ValidationError(
+                {"time_finish": "finish time smaller then start."})
+
+        # session duration must be longer or equal than movie duration
+        finish = dt.combine(date.min, session_time_finish)
+        start = dt.combine(date.min, session_time_start)
+        session_duration = (finish - start).seconds // 60
+        if movie_duration > session_duration:
+            time_short_err = f'session too short for {movie_title}' \
+                             f' movie. Should be more then ' \
+                             f'{movie_duration_format}'
+            raise serializers.ValidationError({"time_finish": time_short_err})
+
+        # sessions should not overlap
+        sessions_start = Session.objects.filter(
+            date_start__gte=str(session_date_start),
+            date_start__lte=str(session_date_finish),
+            room=room
+        )
+        sessions_finish = Session.objects.filter(
+            date_finish__gte=session_date_start,
+            date_finish__lte=session_date_finish,
+            room=room
+        )
+        sessions = sessions_start | sessions_finish
+
+        for session in sessions:
+            if session.time_start <= session_time_start <= session.time_finish:
+                time_err = f"start time isn't free at {session.date_start}" \
+                           f" - {session.date_finish} / {session.movie.title}"
+                raise serializers.ValidationError({"time_start": time_err})
+            if session.time_start <= session_time_finish <= session.time_finish:
+                time_err = f"finish time isn't free at {session.date_start}" \
+                           f" - {session.date_finish} / {session.movie.title}"
+                raise serializers.ValidationError({"time_finish": time_err})
+
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(
+            serializer.data,
+            status=status.HTTP_201_CREATED,
+            headers=headers
+        )
 
 
 class TicketViewSet(viewsets.ModelViewSet):

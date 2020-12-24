@@ -304,7 +304,6 @@ class SessionCreateView(CreateView):
         """If the form is valid, save the associated model."""
         obj = form.cleaned_data
 
-        # autofill the finish time field
         movie_duration = obj.get('movie').duration
         session_time_finish = obj.get('time_finish')
         session_time_start = obj.get('time_start')
@@ -314,10 +313,12 @@ class SessionCreateView(CreateView):
         movie_duration_format = obj.get('movie').duration_format
         room = obj.get('room')
 
+        # autofill the finish time field
         if not session_time_finish:
             td = timedelta(minutes=movie_duration + DURATION_OF_BREAKS)
             time = dt.combine(date.min, session_time_start)
             session_time_finish = obj['time_finish'] = (time + td).time()
+            form.cleaned_data['time_finish'] = session_time_finish
 
         # finish time must be bigger than start time
         if session_time_start >= session_time_finish:
