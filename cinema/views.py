@@ -208,7 +208,7 @@ class TicketsBuyView(CreateView):
                     self.request.META.get('HTTP_REFERER'))
 
             # ticket day must be tomorrow or today
-            if tomorrow < date < today:
+            if tomorrow < date or date < today:
                 messages.error(self.request, 'wrong date')
                 return HttpResponseRedirect(
                     self.request.META.get('HTTP_REFERER'))

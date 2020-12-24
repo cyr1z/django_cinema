@@ -69,7 +69,7 @@ class MovieViewSet(viewsets.ModelViewSet):
 
 
 class SessionViewSet(viewsets.ModelViewSet):
-    # TODO: check has a ticket, time and date
+    # TODO: check has a ticket
 
     serializer_class = SessionSerializer
     queryset = Session.objects.all()
@@ -176,12 +176,56 @@ class TicketViewSet(viewsets.ModelViewSet):
             if self.request.method == 'POST':
                 return TicketAdminSerializer
 
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        print(serializer.validated_data)
 
-class TicketAdminViewSet(viewsets.ModelViewSet):
-    serializer_class = TicketAdminSerializer
-    queryset = Ticket.objects.all()
-    authentication_classes = [BasicAuthentication, ]
-    permission_classes = [IsAdminUser | AuthorizedCreate]
+        obj = serializer.validated_data
+
+        session = obj.get('session')
+        user = obj.get('user')
+        ticket_date = obj.get('date')
+        seat_number = obj.get('seat_number')
+        today = dt.now().date()
+        tomorrow = today + timedelta(days=1)
+        now = dt.now()
+        bought_seats = session.session_tickets.filter(date=ticket_date)
+        bought_seats_numbers = set(i.seat_number for i in bought_seats)
+        all_seats = set(range(1, session.room.seats_count + 1))
+        free_seats = all_seats - bought_seats_numbers
+
+        # ticket must have the free seat
+        if seat_number not in free_seats:
+            raise serializers.ValidationError(
+                {"seats_number": 'Invalid seat number'}
+            )
+
+        # ticket date must  be in session period
+        if session.date_start > ticket_date or session.date_finish < ticket_date:
+            raise serializers.ValidationError(
+                {"seats_number": 'Invalid session date'}
+            )
+
+        # ticket day must be tomorrow or today
+        if tomorrow < ticket_date or ticket_date < today:
+            raise serializers.ValidationError(
+                {"seats_number": 'wrong date'}
+            )
+
+        # ticket time must be greater than now
+        if date == today and session.time_start < now.time():
+            raise serializers.ValidationError(
+                {"seats_number": 'wrong time'}
+            )
+
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(
+            serializer.data,
+            status=status.HTTP_201_CREATED,
+            headers=headers
+        )
 
 
 class TodaySessionViewSet(generics.ListAPIView, ViewSet):
