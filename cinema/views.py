@@ -14,7 +14,7 @@ from cinema.forms import SignUpForm, RoomCreateForm, MovieCreateForm, \
 from cinema.models import Movie, Room, Session, Ticket
 
 from django_cinema.settings import DATE_REGEXP, DEFAULT_SESSION_ORDERING, \
-    SESSION_ORDERINGS, DATATIME_FORMAT, DURATION_OF_BREAKS
+    SESSION_ORDERINGS, DURATION_OF_BREAKS
 
 
 class UserLogin(LoginView):
@@ -136,6 +136,7 @@ class SessionDetailView(DetailView):
         context = super().get_context_data(object_list=object_list, **kwargs)
         # Add date
         date = self.get_date()
+
         # add free seats and tickets count
         bought_seats = self.object.session_tickets.filter(date=date)
         bought_seats_numbers = set(i.seat_number for i in bought_seats)
@@ -143,6 +144,7 @@ class SessionDetailView(DetailView):
         free_seats = list(all_seats - bought_seats_numbers)
         free_seats_count = len(free_seats)
         session_tickets_count = len(bought_seats_numbers)
+
         # set form inputs values, choices and  parameters
         form = BuyTicketForm(self.request.POST or None)
         form.fields['date'].initial = dt.strftime(date, '%Y-%m-%d')
@@ -350,7 +352,7 @@ class SessionCreateView(CreateView):
 
         for session in sessions:
             if session.time_start <= session_time_start <= session.time_finish:
-                time_err = f"start time isn't free at { session.date_start}" \
+                time_err = f"start time isn't free at {session.date_start}" \
                            f" - {session.date_finish} / {session.movie.title}"
                 messages.error(self.request, time_err)
                 return HttpResponseRedirect(
@@ -486,7 +488,7 @@ class SessionUpdate(UpdateView):
 
         for session in sessions:
             if session.time_start <= session_time_start <= session.time_finish:
-                time_err = f"start time isn't free at { session.date_start}" \
+                time_err = f"start time isn't free at {session.date_start}" \
                            f" - {session.date_finish} / {session.movie.title}"
                 messages.error(self.request, time_err)
                 return HttpResponseRedirect(
@@ -499,8 +501,6 @@ class SessionUpdate(UpdateView):
                     self.request.META.get('HTTP_REFERER'))
 
         return super().form_valid(form)
-
-
 
 
 @method_decorator(staff_member_required, name='dispatch')

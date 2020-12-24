@@ -94,11 +94,13 @@ class Session(models.Model):
         # the session does not change after buying tickets
         if self.session_tickets.count():
             raise ValidationError('The session has a ticket')
+
         # autofill the finish time field
         if not self.time_finish:
             td = timedelta(minutes=self.movie.duration + DURATION_OF_BREAKS)
             time = dt.combine(date.min, self.time_start)
             self.time_finish = (time + td).time()
+
         # finish time must be bigger than start time
         if self.time_start >= self.time_finish:
             raise ValidationError('Wrong end time')

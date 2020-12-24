@@ -10,7 +10,7 @@ from rest_framework.viewsets import ViewSet
 
 from cinema.API.serialisers import RoomSerializer, UserSerializer, \
     MovieSerializer, SessionSerializer, TicketSerializer, \
-    SessionAdminSerializer, TicketAdminSerializer
+    SessionAdminSerializer, TicketAdminSerializer, RegisterSerializer
 from cinema.models import Room, CinemaUser, Movie, Session, Ticket
 
 
@@ -25,6 +25,12 @@ class AuthorizedCreate(BasePermission):
             return request.method == 'POST'
 
 
+class Register(BasePermission):
+    def has_permission(self, request, view):
+        if not request.user.is_authenticated:
+            return request.method == 'POST'
+
+
 class RoomViewSet(viewsets.ModelViewSet):
     serializer_class = RoomSerializer
     queryset = Room.objects.all()
@@ -36,7 +42,17 @@ class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
     queryset = CinemaUser.objects.all()
     authentication_classes = [BasicAuthentication, ]
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsAdminUser | Register]
+
+    def get_serializer_class(self):
+        print(self.request.method)
+        if hasattr(self.request, 'method'):
+            if self.request.method in SAFE_METHODS:
+                return UserSerializer
+            elif self.request.method == 'POST':
+                return RegisterSerializer
+            else:
+                return UserSerializer
 
 
 class MovieViewSet(viewsets.ModelViewSet):
