@@ -536,3 +536,18 @@ class RoomUpdate(UpdateView):
         'title',
         'seats_count',
     ]
+
+    def form_valid(self, form):
+
+        """If the form is valid, save the associated model."""
+        obj = form.cleaned_data
+        room = self.object
+        tickets = Ticket.objects.filter(
+            session__room=room,
+            date__gt=dt.now().date()).count()
+        if tickets:
+            messages.error(self.request, "The room has a ticket")
+            return HttpResponseRedirect(
+                self.request.META.get('HTTP_REFERER'))
+
+        return super().form_valid(form)
