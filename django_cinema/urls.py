@@ -52,6 +52,7 @@ urlpatterns = [
     path('roomslist/', RoomListView.as_view(), name="roomslist"),
     path('movieslist/', MovieListView.as_view(), name="movieslist"),
     path('sessionedit/<int:pk>/', SessionUpdate.as_view(), name="sessionedit"),
+    # path('sessiondel/<int:pk>/', SessionDelete.as_view(), name="sessiondel"),
     path('movieedit/<int:pk>/', MovieUpdate.as_view(), name="movieedit"),
     path('roomedit/<int:pk>/', RoomUpdate.as_view(), name="roomedit"),
     path('buyticket/', TicketsBuyView.as_view(), name="buyticket"),

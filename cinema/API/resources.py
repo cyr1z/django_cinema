@@ -60,7 +60,7 @@ class RoomViewSet(viewsets.ModelViewSet):
 
 
 class UserViewSet(viewsets.ModelViewSet):
-    # TODO: delete
+
 
     serializer_class = UserSerializer
     queryset = CinemaUser.objects.all()
@@ -96,7 +96,7 @@ class SessionViewSet(viewsets.ModelViewSet):
         if hasattr(self.request, 'method'):
             if self.request.method in SAFE_METHODS:
                 return SessionSerializer
-            elif self.request.method in ('POST', "PUT", "PATCH"):
+            elif self.request.method in ('POST', "PUT", "PATCH",):
                 return SessionAdminSerializer
             else:
                 return UserSerializer
@@ -248,6 +248,40 @@ class SessionViewSet(viewsets.ModelViewSet):
         )
 
 
+class TodaySessionViewSet(generics.ListAPIView, ViewSet):
+    serializer_class = SessionSerializer
+    authentication_classes = [BasicAuthentication, ]
+    permission_classes = [ReadOnly]
+
+    def get_queryset(self):
+        """
+        obtaining information about all sessions for today,
+        which begin at a certain period of time and / or go in a
+        particular room
+
+        /today_session_api/?min_time=12:00:00&max_time=22:00:00&room=1
+        """
+        today = dt.now().date()
+
+        queryset = Session.objects.filter(
+            date_finish__gte=today,
+            date_start__lte=today,
+        )
+        minimum_time = dt.strptime(
+            self.request.query_params.get('min_time', '00:00:00'),
+            "%H:%M:%S").time()
+        queryset = queryset.filter(time_start__gte=minimum_time)
+
+        maximum_time = dt.strptime(
+            self.request.query_params.get('max_time', '23:59:59'),
+            "%H:%M:%S").time()
+        queryset = queryset.filter(time_start__lte=maximum_time)
+        room = self.request.query_params.get('room', None)
+        if room is not None:
+            queryset = queryset.filter(room__id=room)
+        return queryset
+
+
 class TicketViewSet(viewsets.ModelViewSet):
     serializer_class = TicketSerializer
     authentication_classes = [BasicAuthentication, ]
@@ -318,37 +352,3 @@ class TicketViewSet(viewsets.ModelViewSet):
             status=status.HTTP_201_CREATED,
             headers=headers
         )
-
-
-class TodaySessionViewSet(generics.ListAPIView, ViewSet):
-    serializer_class = SessionSerializer
-    authentication_classes = [BasicAuthentication, ]
-    permission_classes = [ReadOnly]
-
-    def get_queryset(self):
-        """
-        obtaining information about all sessions for today,
-        which begin at a certain period of time and / or go in a
-        particular room
-
-        /today_session_api/?min_time=12:00:00&max_time=22:00:00&room=1
-        """
-        today = dt.now().date()
-
-        queryset = Session.objects.filter(
-            date_finish__gte=today,
-            date_start__lte=today,
-        )
-        minimum_time = dt.strptime(
-            self.request.query_params.get('min_time', '00:00:00'),
-            "%H:%M:%S").time()
-        queryset = queryset.filter(time_start__gte=minimum_time)
-
-        maximum_time = dt.strptime(
-            self.request.query_params.get('max_time', '23:59:59'),
-            "%H:%M:%S").time()
-        queryset = queryset.filter(time_start__lte=maximum_time)
-        room = self.request.query_params.get('room', None)
-        if room is not None:
-            queryset = queryset.filter(room__id=room)
-        return queryset
