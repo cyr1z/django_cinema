@@ -2,8 +2,6 @@ from datetime import datetime as dt, date, timedelta
 
 from rest_framework import viewsets, generics, status, serializers
 from rest_framework.authentication import BasicAuthentication
-# from rest_framework.generics import get_object_or_404
-# from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, IsAdminUser, \
     SAFE_METHODS, BasePermission
 from rest_framework.response import Response
@@ -34,7 +32,6 @@ class Register(BasePermission):
 
 
 class RoomViewSet(viewsets.ModelViewSet):
-
     serializer_class = RoomSerializer
     queryset = Room.objects.all()
     authentication_classes = [BasicAuthentication, ]
@@ -46,10 +43,9 @@ class RoomViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(instance, data=request.data,
                                          partial=partial)
         serializer.is_valid(raise_exception=True)
-        obj = serializer.validated_data
         tickets = Ticket.objects.filter(
-            session__room=instance,
-            date__gt=dt.now().date()).count()
+            session__room=instance.session,
+            date__gte=dt.now().date()).count()
         if tickets:
             raise serializers.ValidationError(
                 {"room_tickets": "The room has a ticket"})
@@ -89,10 +85,7 @@ class MovieViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAdminUser | ReadOnly]
 
 
-
-
 class SessionViewSet(viewsets.ModelViewSet):
-
     serializer_class = SessionSerializer
     queryset = Session.objects.all()
     authentication_classes = [BasicAuthentication, ]
@@ -135,7 +128,6 @@ class SessionViewSet(viewsets.ModelViewSet):
             time = dt.combine(date.min, session_time_start)
             session_time_finish = obj['time_finish'] = (time + td).time()
             serializer.validated_data['time_finish'] = session_time_finish
-
 
         # finish time must be bigger than start time
         if session_time_start >= session_time_finish:

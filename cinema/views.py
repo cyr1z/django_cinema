@@ -382,6 +382,7 @@ class SessionsListView(ListView):
     )
 
 
+
 @method_decorator(staff_member_required, name='dispatch')
 class RoomListView(ListView):
     """
@@ -391,9 +392,17 @@ class RoomListView(ListView):
     paginate_by = 10
     template_name = 'room-list.html'
     today = dt.now().date()
-    queryset = Room.objects.all().annotate(
-        tickets=Count('room_sessions__session_tickets')
-    )
+    q_ticket = Q(room_sessions__session_tickets__date__gte=today)
+    queryset = Room.objects.all().annotate(tickets=Count(q_ticket))
+    # queryset = Room.objects.all().annotate(
+    #     tickets=Count('room_sessions__session_tickets')
+    # )
+    # queryset = Session.objects.filter(date_finish__gte=today).annotate(
+    #     tickets=Count(Q(room_sessions__session_tickets__date__gt=dt.now(
+    #
+    #     ).date()))
+    # )
+    print(queryset)
 
 
 @method_decorator(staff_member_required, name='dispatch')
@@ -540,11 +549,10 @@ class RoomUpdate(UpdateView):
     def form_valid(self, form):
 
         """If the form is valid, save the associated model."""
-        obj = form.cleaned_data
         room = self.object
         tickets = Ticket.objects.filter(
             session__room=room,
-            date__gt=dt.now().date()).count()
+            date__gte=dt.now().date()).count()
         if tickets:
             messages.error(self.request, "The room has a ticket")
             return HttpResponseRedirect(
