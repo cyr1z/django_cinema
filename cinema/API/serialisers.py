@@ -9,6 +9,7 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CinemaUser
         fields = [
+            'id',
             'username',
             'first_name',
             'last_name',
@@ -59,13 +60,14 @@ class RegisterSerializer(serializers.ModelSerializer):
 class RoomSerializer(serializers.ModelSerializer):
     class Meta:
         model = Room
-        fields = ['title', 'seats_count', ]
+        fields = ['id', 'title', 'seats_count', ]
 
 
 class MovieSerializer(serializers.ModelSerializer):
     class Meta:
         model = Movie
         fields = [
+            'id',
             'title',
             'description',
             'poster',
@@ -82,6 +84,7 @@ class SessionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Session
         fields = [
+            'id',
             'movie',
             'room',
             'time_start',

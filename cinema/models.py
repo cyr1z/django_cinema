@@ -115,28 +115,6 @@ class Session(models.Model):
                 f'Should be more then {self.movie.duration_format}'
             )
 
-        # sessions should not overlap
-        sessions_start = Session.objects.filter(
-            date_start__gte=self.date_start,
-            date_start__lte=self.date_finish,
-            room=self.room
-        )
-        sessions_finish = Session.objects.filter(
-            date_finish__gte=self.date_start,
-            date_finish__lte=self.date_finish,
-            room=self.room
-        )
-        sessions = sessions_start | sessions_finish
-
-        for session in sessions:
-            if session.time_start <= self.time_start <= session.time_finish:
-                raise ValidationError(
-                    f"start time isn't free at {session.date_start} - "
-                    f"{session.date_finish} / {session.movie.title}"
-                )
-            if session.time_start <= self.time_finish <= session.time_finish:
-                raise ValidationError(f"finish time isn't free")
-
         super().save(*args, **kwargs)
 
     def __str__(self):

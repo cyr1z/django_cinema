@@ -455,6 +455,7 @@ class SessionUpdate(UpdateView):
             td = timedelta(minutes=movie_duration + DURATION_OF_BREAKS)
             time = dt.combine(date.min, session_time_start)
             session_time_finish = obj['time_finish'] = (time + td).time()
+            form.cleaned_data['time_finish'] = session_time_finish
 
         # finish time must be bigger than start time
         if session_time_start >= session_time_finish:
@@ -479,12 +480,13 @@ class SessionUpdate(UpdateView):
             date_start__gte=str(session_date_start),
             date_start__lte=str(session_date_finish),
             room=room
-        )
+        ).exclude(id=session.id)
         sessions_finish = Session.objects.filter(
             date_finish__gte=session_date_start,
             date_finish__lte=session_date_finish,
             room=room
-        )
+        ).exclude(id=session.id)
+
         sessions = sessions_start | sessions_finish
 
         for session in sessions:
